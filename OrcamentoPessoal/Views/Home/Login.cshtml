@@ -1,0 +1,78 @@
+﻿@model OrcamentoPessoal.Models.UserLogin
+@Styles.Render("~/Content/login")
+
+<div id="dvLogin">
+    <div class="animated-bg"></div>
+    <div class="login-container">
+        <div class="login-form-section">
+            <div class="dvLogoOS text-center mb-3">
+                <img src="~/Content/img/logo.png" class="logo" alt="KR Saúde Para Toda Família">
+            </div>
+
+            @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "frmLogin" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label>CPF</label>
+                    @Html.EditorFor(model => Model.Usuario, new
+                    {
+                        htmlAttributes = new
+                        {
+                            @class = "cpfLogin",
+                            placeholder = "Seu CPF",
+                            @type = "number",
+                            inputmode = "numeric",
+                            autofocus = true,
+                            onfocusout = "filiaisUsuario()"
+                        }
+                    })
+                    @Html.ValidationMessageFor(model => Model.Usuario, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label>Senha</label>
+                    @Html.EditorFor(model => Model.Senha, new
+                    {
+                        htmlAttributes = new
+                        {
+                            placeholder = "Sua Senha",
+                            @type = "password"
+                        }
+                    })
+                    @Html.ValidationMessageFor(model => Model.Senha, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group" id="dvSelFilial" style="display: none;">
+                    @Html.Partial("_SelFilialLogin", new ViewDataDictionary())
+                </div>
+
+                if (ViewBag.Message != null)
+                {
+                    <div class="text-center"><span class="text-danger fs-5">@ViewBag.Message</span></div>
+                }
+
+                if (Session["SESTIMEOUT"] != null && Session["SESTIMEOUT"].ToString().Length > 0)
+                {
+                    <div class="text-center"><span class="text-danger fs-5">@Session["SESTIMEOUT"]</span></div>
+                    Session["SESTIMEOUT"] = null;
+                }
+
+                <button class="btn-primary" type="submit" id="btnLogin" disabled="disabled">Entrar</button>
+            }
+
+            <div class="text-center mt-3">
+                <img src="~/Content/img/logo_novaerasoft.png" class="logoNES" alt="NovaEraSoft">
+            </div>
+        </div>
+
+        <div class="image-section">
+            <img src="~/Content/img/login.jpg" class="right-image" alt="KR Saúde">
+        </div>
+    </div>
+</div>
+
+<script>var urlFiliaisUsuario = '@Url.Action("FiliaisUsuario", "Home")';</script>
+@Html.Partial("_ErrorModal")
+@Html.Partial("_InfoModal")
+@Scripts.Render("~/bundles/login")
