@@ -1,9 +1,53 @@
 ﻿@{
-    ViewBag.Title = "About";
+    ViewBag.Title = "Sobre o Projeto";
+    ViewBag.PageTitle = "Sobre o Projeto & Roadmap";
 }
-<main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
-    <h3>@ViewBag.Message</h3>
 
-    <p>Use this area to provide additional information.</p>
-</main>
+<div class="card-app mb-4">
+    <div class="card-app-header">
+        <h3 class="card-app-title">
+            <i class="bi bi-info-circle text-primary"></i>
+            <span>Sistema de Orçamento Pessoal & IA Financeira</span>
+        </h3>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Trabalho Acadêmico</span>
+    </div>
+    <div class="card-app-body">
+        <div class="row g-4">
+            <div class="col-12 col-lg-8">
+                <h4 class="h5 fw-bold text-dark mb-3">Visão e Objetivo da Solução</h4>
+                <p class="text-secondary leading-relaxed">
+                    Este projeto nasceu como uma iniciativa acadêmica para a faculdade, com visão de evolução para uma ferramenta comercial e pessoal definitiva de gestão financeira inteligente.
+                </p>
+                <p class="text-secondary leading-relaxed">
+                    O principal gargalo no controle financeiro pessoal e de pequenos negócios é o retrabalho manual: baixar extratos bancários, faturas de múltiplos cartões e recibos avulsos, e ter que digitar linha por linha em uma planilha.
+                </p>
+                <p class="text-secondary leading-relaxed">
+                    A solução propõe integrar módulos de <strong>Inteligência Artificial (LLMs e OCR)</strong> para interpretar documentos desestruturados em formatos como <strong>PDF, planilhas Excel (.xlsx), arquivos CSV e fotos de recibos</strong>, convertendo-os automaticamente em planilhas padronizadas e gráficos de acompanhamento.
+                </p>
+
+                <hr class="my-4" />
+
+                <h5 class="fw-bold text-dark mb-3">Próximos Passos de Desenvolvimento</h5>
+                <ul class="list-unstyled d-flex flex-column gap-2 text-secondary">
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Fase 1 (Concluída):</strong> Padronização do Design System (site.css), menu lateral responsivo, tela de login mockada e modelagem das entidades de domínio.</li>
+                    <li><i class="bi bi-clock-history text-primary me-2"></i><strong>Fase 2 (Em Planejamento):</strong> Implementação da persistência de dados em banco de dados relacional (Entity Framework / MySQL ou SQL Server).</li>
+                    <li><i class="bi bi-stars text-info me-2"></i><strong>Fase 3 (Futura):</strong> Integração com APIs de Inteligência Artificial para parsing de PDFs, leitura de extratos OFX/PDF e consolidação automática de relatórios financeiros.</li>
+                </ul>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <div class="p-3 bg-light rounded-3 border">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-code-slash me-2 text-primary"></i>Stack Tecnológica</h6>
+                    <ul class="list-unstyled small text-secondary d-flex flex-column gap-2 mb-0">
+                        <li><strong>Backend:</strong> ASP.NET MVC (.NET Framework 4.7.2)</li>
+                        <li><strong>Linguagem:</strong> C#</li>
+                        <li><strong>Frontend:</strong> HTML5 Semântico, CSS3 Moderno, Bootstrap 5.2.3</li>
+                        <li><strong>Ícones:</strong> Bootstrap Icons</li>
+                        <li><strong>Mock:</strong> Camada de simulação em memória (HomeDB)</li>
+                        <li><strong>IA Alvo:</strong> Extração de documentos financeiros (OCR & LLMs)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

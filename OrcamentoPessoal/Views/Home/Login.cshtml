@@ -1,78 +1,242 @@
 ﻿@model OrcamentoPessoal.Models.UserLogin
-@Styles.Render("~/Content/login")
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acesso ao Sistema - Orçamento Pessoal & IA</title>
 
-<div id="dvLogin">
-    <div class="animated-bg"></div>
-    <div class="login-container">
-        <div class="login-form-section">
-            <div class="dvLogoOS text-center mb-3">
-                <img src="~/Content/img/logo.png" class="logo" alt="KR Saúde Para Toda Família">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Estilos da Aplicação -->
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body class="login-page-body">
+    <div class="login-card-container">
+        <!-- Lado Visual: Identidade e Conceito do Projeto -->
+        <div class="login-hero-side">
+            <div class="login-hero-header">
+                <span class="login-brand-badge">
+                    <i class="bi bi-stars text-info"></i> Inteligência Financeira
+                </span>
+                <h1 class="login-hero-title">
+                    Controle Orçamentário com Suporte de IA
+                </h1>
+                <p class="login-hero-description">
+                    Uma plataforma moderna desenvolvida para simplificar sua vida financeira, automatizando a leitura de extratos, notas e faturas.
+                </p>
             </div>
 
-            @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "frmLogin" }))
+            <div class="login-feature-list">
+                <div class="login-feature-item">
+                    <div class="login-feature-icon">
+                        <i class="bi bi-file-earmark-pdf"></i>
+                    </div>
+                    <div class="login-feature-text">
+                        <strong>Leitura Inteligente de Documentos</strong><br />
+                        Extração automatizada de PDFs bancários, faturas de cartão e planilhas.
+                    </div>
+                </div>
+
+                <div class="login-feature-item">
+                    <div class="login-feature-icon">
+                        <i class="bi bi-cpu"></i>
+                    </div>
+                    <div class="login-feature-text">
+                        <strong>Categorização Automática</strong><br />
+                        A IA identifica estabelecimentos e classifica despesas sem trabalho manual.
+                    </div>
+                </div>
+
+                <div class="login-feature-item">
+                    <div class="login-feature-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div class="login-feature-text">
+                        <strong>Padronização de Relatórios</strong><br />
+                        Geração de planilhas consolidadas e gráficos claros de evolução patrimonial.
+                    </div>
+                </div>
+            </div>
+
+            <div class="login-hero-footer">
+                <i class="bi bi-mortarboard me-1"></i> Projeto Acadêmico &bull; Faculdade de Tecnologia
+            </div>
+        </div>
+
+        <!-- Lado Formulário: Acesso ao Sistema -->
+        <div class="login-form-side">
+            <div class="login-form-header">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="brand-logo-icon" style="width: 32px; height: 32px; font-size: 1rem;">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <span class="fw-bold text-dark fs-5">Orçamento Pessoal</span>
+                </div>
+                <h2 class="login-form-title">Acesse sua Conta</h2>
+                <p class="login-form-subtitle">Digite seus dados para gerenciar seu orçamento</p>
+            </div>
+
+            <!-- Card com as Credenciais Mockadas para teste rápido -->
+            <div class="mock-credentials-card">
+                <i class="bi bi-info-circle-fill"></i>
+                <div class="mock-credentials-text">
+                    <strong>Ambiente Mock (Sem Banco):</strong><br />
+                    CPF: <code>123.456.789-09</code> &bull; Senha: <code>senha123</code>
+                </div>
+                <button type="button" class="btn-fill-mock" id="btnFillDemo" title="Preencher formulário automaticamente">
+                    Preencher
+                </button>
+            </div>
+
+            @if (ViewBag.Message != null)
             {
-                @Html.AntiForgeryToken()
-
-                <div class="form-group">
-                    <label>CPF</label>
-                    @Html.EditorFor(model => Model.Usuario, new
-                    {
-                        htmlAttributes = new
-                        {
-                            @class = "cpfLogin",
-                            placeholder = "Seu CPF",
-                            @type = "number",
-                            inputmode = "numeric",
-                            autofocus = true,
-                            onfocusout = "filiaisUsuario()"
-                        }
-                    })
-                    @Html.ValidationMessageFor(model => Model.Usuario, "", new { @class = "text-danger" })
+                <div class="alert alert-danger d-flex align-items-center gap-2 py-2 mb-3 rounded-3" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                    <div class="small fw-semibold">@ViewBag.Message</div>
                 </div>
-
-                <div class="form-group">
-                    <label>Senha</label>
-                    @Html.EditorFor(model => Model.Senha, new
-                    {
-                        htmlAttributes = new
-                        {
-                            placeholder = "Sua Senha",
-                            @type = "password"
-                        }
-                    })
-                    @Html.ValidationMessageFor(model => Model.Senha, "", new { @class = "text-danger" })
-                </div>
-
-                <div class="form-group" id="dvSelFilial" style="display: none;">
-                    @Html.Partial("_SelFilialLogin", new ViewDataDictionary())
-                </div>
-
-                if (ViewBag.Message != null)
-                {
-                    <div class="text-center"><span class="text-danger fs-5">@ViewBag.Message</span></div>
-                }
-
-                if (Session["SESTIMEOUT"] != null && Session["SESTIMEOUT"].ToString().Length > 0)
-                {
-                    <div class="text-center"><span class="text-danger fs-5">@Session["SESTIMEOUT"]</span></div>
-                    Session["SESTIMEOUT"] = null;
-                }
-
-                <button class="btn-primary" type="submit" id="btnLogin" disabled="disabled">Entrar</button>
             }
 
-            <div class="text-center mt-3">
-                <img src="~/Content/img/logo_novaerasoft.png" class="logoNES" alt="NovaEraSoft">
+            @using (Html.BeginForm("Login", "Home", FormMethod.Post, new { id = "frmLogin", novalidate = "novalidate" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "text-danger small mb-3" })
+
+                <div class="mb-3">
+                    <label for="txtUsuario" class="form-label">CPF ou Usuário</label>
+                    <div class="input-icon-group">
+                        <i class="bi bi-person input-icon-prefix"></i>
+                        @Html.TextBoxFor(model => model.Usuario, new
+                        {
+                            @class = "form-control",
+                            id = "txtUsuario",
+                            placeholder = "123.456.789-09",
+                            autocomplete = "username",
+                            required = "required"
+                        })
+                    </div>
+                    @Html.ValidationMessageFor(model => model.Usuario, "", new { @class = "text-danger small mt-1 d-block" })
+                </div>
+
+                <div class="mb-3">
+                    <label for="txtSenha" class="form-label">Senha</label>
+                    <div class="input-icon-group">
+                        <i class="bi bi-lock input-icon-prefix"></i>
+                        @Html.PasswordFor(model => model.Senha, new
+                        {
+                            @class = "form-control",
+                            id = "txtSenha",
+                            placeholder = "Digite sua senha",
+                            autocomplete = "current-password",
+                            required = "required"
+                        })
+                        <button type="button" class="btn-toggle-password" id="btnTogglePassword" aria-label="Mostrar ou ocultar senha">
+                            <i class="bi bi-eye" id="iconEye"></i>
+                        </button>
+                    </div>
+                    @Html.ValidationMessageFor(model => model.Senha, "", new { @class = "text-danger small mt-1 d-block" })
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div class="form-check">
+                        @Html.CheckBoxFor(model => model.LembrarMe, new { @class = "form-check-input", id = "chkLembrar" })
+                        <label class="form-check-label small text-muted" for="chkLembrar">
+                            Lembrar meu acesso
+                        </label>
+                    </div>
+                    <a href="javascript:void(0)" class="small text-primary fw-semibold" id="linkForgotPassword">
+                        Esqueceu a senha?
+                    </a>
+                </div>
+
+                <button type="submit" class="btn-login-submit" id="btnLogin">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>Entrar no Sistema</span>
+                </button>
+            }
+
+            <div class="text-center mt-4">
+                <span class="text-muted small">
+                    Ainda não tem conta? <span class="text-dark fw-semibold">Acesso pré-configurado para avaliação</span>
+                </span>
             </div>
         </div>
-
-        <div class="image-section">
-            <img src="~/Content/img/login.jpg" class="right-image" alt="KR Saúde">
-        </div>
     </div>
-</div>
 
-<script>var urlFiliaisUsuario = '@Url.Action("FiliaisUsuario", "Home")';</script>
-@Html.Partial("_ErrorModal")
-@Html.Partial("_InfoModal")
-@Scripts.Render("~/bundles/login")
+    <!-- Scripts -->
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+
+    <script>
+        (function () {
+            'use strict';
+
+            var btnFill = document.getElementById('btnFillDemo');
+            var txtUser = document.getElementById('txtUsuario');
+            var txtPass = document.getElementById('txtSenha');
+            var btnToggle = document.getElementById('btnTogglePassword');
+            var iconEye = document.getElementById('iconEye');
+            var linkForgot = document.getElementById('linkForgotPassword');
+
+            // Preenchimento de dados de teste (Mock)
+            if (btnFill && txtUser && txtPass) {
+                btnFill.addEventListener('click', function () {
+                    txtUser.value = '123.456.789-09';
+                    txtPass.value = 'senha123';
+                    txtUser.classList.remove('is-invalid');
+                    txtPass.classList.remove('is-invalid');
+                });
+            }
+
+            // Alternar visibilidade da senha
+            if (btnToggle && txtPass && iconEye) {
+                btnToggle.addEventListener('click', function () {
+                    if (txtPass.type === 'password') {
+                        txtPass.type = 'text';
+                        iconEye.classList.remove('bi-eye');
+                        iconEye.classList.add('bi-eye-slash');
+                    } else {
+                        txtPass.type = 'password';
+                        iconEye.classList.remove('bi-eye-slash');
+                        iconEye.classList.add('bi-eye');
+                    }
+                });
+            }
+
+            // Máscara dinâmica de CPF
+            if (txtUser) {
+                txtUser.addEventListener('input', function (e) {
+                    var val = e.target.value.replace(/\D/g, '');
+                    if (val.length <= 11 && val.length > 0) {
+                        if (val.length > 9) {
+                            val = val.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
+                        } else if (val.length > 6) {
+                            val = val.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+                        } else if (val.length > 3) {
+                            val = val.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
+                        }
+                        e.target.value = val;
+                    }
+                });
+            }
+
+            // Feedback de Esqueceu a Senha
+            if (linkForgot) {
+                linkForgot.addEventListener('click', function () {
+                    alert('Ambiente de Demonstração (Mock):\nUtilize o CPF: 123.456.789-09 e a senha: senha123 para entrar.');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

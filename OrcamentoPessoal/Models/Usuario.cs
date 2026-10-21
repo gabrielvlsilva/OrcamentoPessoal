@@ -1,25 +1,67 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace OrcamentoPessoal.Models
 {
     public class Usuario
     {
-        [Required(ErrorMessage = "Informe o Nome do Usuário", AllowEmptyStrings = false)]
-        public string Nome { get; set; }
+        public int Id { get; set; } = 1;
 
-        [Display(Name = "Login (CPF)")]
-        [Required(ErrorMessage = "Informe um CPF válido", AllowEmptyStrings = false)]
-        [RegularExpression(@"^\d{11}$", ErrorMessage = "O CPF deve ter 11 dígitos")]
-        public string CPF { get; set; }
+        [Required(ErrorMessage = "Informe o Nome do Usuário")]
+        [Display(Name = "Nome Completo")]
+        [StringLength(100, MinimumLength = 3, ErrorMessage = "O nome deve ter entre 3 e 100 caracteres")]
+        public string Nome { get; set; } = string.Empty;
+
+        [Display(Name = "CPF")]
+        [Required(ErrorMessage = "Informe o CPF")]
+        public string CPF { get; set; } = string.Empty;
+
+        [Display(Name = "E-mail")]
+        [EmailAddress(ErrorMessage = "Informe um e-mail válido")]
+        public string Email { get; set; } = string.Empty;
+
+        [Display(Name = "Telefone / Celular")]
+        public string Telefone { get; set; } = string.Empty;
 
         [DataType(DataType.Password)]
-        [Display(Name = "Senha do Usuário")]
-        [StringLength(int.MaxValue, MinimumLength = 6, ErrorMessage = "Mínimo de 6 caracteres")]
-        public string SenhaUser { get; set; }
+        [Display(Name = "Senha")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "A senha deve ter no mínimo 6 caracteres")]
+        public string SenhaUser { get; set; } = string.Empty;
 
-        [Compare("SenhaUser", ErrorMessage = "As senhas digitadas não estão iguais")]
-        public string ConfirmaSenha { get; set; }
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirmar Senha")]
+        [Compare("SenhaUser", ErrorMessage = "As senhas digitadas não conferem")]
+        public string ConfirmaSenha { get; set; } = string.Empty;
+
+        [Display(Name = "Perfil")]
+        public string Perfil { get; set; } = "Administrador";
 
         public bool Ativo { get; set; } = true;
+
+        [Display(Name = "Data de Cadastro")]
+        public DateTime DataCadastro { get; set; } = DateTime.Now;
+
+        public string AvatarUrl { get; set; } = string.Empty;
+
+        public string PrimeiroNome
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Nome)) return "Usuário";
+                var partes = Nome.Trim().Split(' ');
+                return partes[0];
+            }
+        }
+
+        public string Iniciais
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Nome)) return "OP";
+                var partes = Nome.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (partes.Length == 1) return partes[0].Substring(0, Math.Min(2, partes[0].Length)).ToUpper();
+                return $"{partes[0][0]}{partes[partes.Length - 1][0]}".ToUpper();
+            }
+        }
     }
 }

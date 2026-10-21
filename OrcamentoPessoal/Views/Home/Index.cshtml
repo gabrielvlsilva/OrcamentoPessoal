@@ -1,33 +1,338 @@
-﻿@model OrcamentoPessoal.Models.UserLogin
+﻿@model OrcamentoPessoal.Models.DashboardViewModel
 @{
-    Layout = null;
+    ViewBag.Title = "Visão Geral";
+    ViewBag.PageTitle = "Visão Geral & Indicadores";
 }
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title class="hero-title">Login - Orçamento Pessoal</title>
-    @Styles.Render("~/Content/css")
-    @Scripts.Render("~/bundles/modernizr")
-</head>
-<body class="login-bg">
-    <section class="hero container-tight d-flex justify-content-center">
-        <div class="card feature-card animate-fade-up col-md-4">
-            <h2 class="hero-title animate-fade-up">Login Orçamento Pessoal</h2>
-            <form action="Login" method="POST">
-                <div class="mb-2">
-                    @Html.EditorFor(model => model.Usuario, new { htmlAttributes = new { @class = "form-group", placeholder = "Digite seu CPF" } })
-                </div>
 
-                <div>
-                    @Html.EditorFor(model => model.Senha, new { htmlAttributes = new { @class = "form-group", placeholder = "Digite sua senha" } })
-                </div>
-                <div class="m-2 d-flex justify-content-end"><a href="#">Esqueceu a senha?</a></div>
+<!-- Cabeçalho de Boas-Vindas & Ações Rápidas -->
+<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+        <h2 class="h3 fw-bold mb-1 text-dark">
+            Olá, @(Model?.Usuario?.PrimeiroNome ?? "Usuário")! 👋
+        </h2>
+        <p class="text-muted mb-0 small">
+            Acompanhe suas finanças e o status de processamento inteligente de documentos para o período de <strong>@(Model?.MesAtualNome ?? "Mês Atual")</strong>.
+        </p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <button type="button" class="btn btn-app-outline btn-sm" onclick="alert('Funcionalidade de inclusão manual de lançamento mockada.')">
+            <i class="bi bi-plus-circle me-1 text-primary"></i> Novo Lançamento
+        </button>
+        <button type="button" class="btn btn-app-ai btn-sm" onclick="alert('Área de envio de documentos para extração com IA mockada.')">
+            <i class="bi bi-file-earmark-arrow-up me-1"></i> Importar PDF / Planilha
+        </button>
+    </div>
+</div>
 
-                <div><button class="btn btn-primary justify-content-center" type="submit">Entrar</button></div>
-            </form>
+<!-- Banner de Visão do Projeto: Leitor Inteligente de Arquivos Financeiros com IA -->
+<div class="ai-banner-card">
+    <div class="row align-items-center position-relative" style="z-index: 2;">
+        <div class="col-12 col-lg-8">
+            <span class="badge bg-white text-primary fw-bold text-uppercase px-2 py-1 mb-2 small">
+                <i class="bi bi-stars"></i> Futura Integração com IA
+            </span>
+            <h3 class="h4 text-white fw-bold mb-2">
+                Leitura Automatizada de Documentos Financeiros
+            </h3>
+            <p class="text-light mb-0 opacity-75 small" style="max-width: 680px;">
+                Esta plataforma foi desenhada para conectar modelos de Inteligência Artificial capazes de processar
+                <strong>extratos em PDF</strong>, <strong>faturas de cartão</strong> e <strong>planilhas (.xlsx/.csv)</strong>,
+                padronizando lançamentos contábeis e orçamentos automaticamente sem digitação manual.
+            </p>
         </div>
-    </section>
-</body>
-</html>
+        <div class="col-12 col-lg-4 text-lg-end mt-3 mt-lg-0">
+            <div class="d-inline-flex flex-column align-items-lg-end bg-dark bg-opacity-50 p-3 rounded-3 border border-secondary border-opacity-25">
+                <span class="text-info fw-bold small"><i class="bi bi-check2-circle me-1"></i> Módulo Mock Ativo</span>
+                <span class="text-white-50 small">42 transações extraídas via IA</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Grid de Indicadores Principais (KPI Cards) -->
+<div class="row g-3 mb-4">
+    <!-- Saldo Atual -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card h-100">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Saldo Disponível</span>
+                <div class="stat-icon saldo">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+            </div>
+            <div class="stat-value">@(Model?.SaldoFormatado ?? "R$ 0,00")</div>
+            <div class="stat-footer text-success">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Saldo positivo consolidado</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receitas do Mês -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card h-100">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Receitas do Mês</span>
+                <div class="stat-icon receita">
+                    <i class="bi bi-arrow-up-right-circle"></i>
+                </div>
+            </div>
+            <div class="stat-value receita">@(Model?.ReceitasFormatado ?? "R$ 0,00")</div>
+            <div class="stat-footer text-muted">
+                <i class="bi bi-calendar3 me-1"></i>
+                <span>@(Model?.MesAtualNome ?? "Período Vigente")</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Despesas do Mês -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card h-100">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Despesas Totais</span>
+                <div class="stat-icon despesa">
+                    <i class="bi bi-arrow-down-left-circle"></i>
+                </div>
+            </div>
+            <div class="stat-value despesa">@(Model?.DespesasFormatado ?? "R$ 0,00")</div>
+            <div class="stat-footer text-muted">
+                <span>34% do orçamento comprometido</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- IA Processamento -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card h-100">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Arquivos Lidos (IA)</span>
+                <div class="stat-icon ia">
+                    <i class="bi bi-robot"></i>
+                </div>
+            </div>
+            <div class="stat-value">@(Model?.TotalDocumentosProcessados ?? 0) <small class="fs-6 fw-normal text-muted">documentos</small></div>
+            <div class="stat-footer text-info">
+                <i class="bi bi-cpu me-1"></i>
+                <span>@(Model?.TotalTransacoesExtraidasIA ?? 0) itens conciliados</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Conteúdo Central: Tabelas de Transações e Documentos IA -->
+<div class="row g-4">
+    <!-- Coluna Esquerda: Transações Recentes e Arquivos Processados -->
+    <div class="col-12 col-lg-8">
+        <!-- Card: Últimas Transações -->
+        <div class="card-app mb-4">
+            <div class="card-app-header">
+                <h3 class="card-app-title">
+                    <i class="bi bi-arrow-left-right text-primary"></i>
+                    <span>Últimos Lançamentos Financeiros</span>
+                </h3>
+                <span class="badge bg-light text-muted border">Mock Data</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table-app">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Origem / Extração</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.UltimasTransacoes != null && Model.UltimasTransacoes.Any())
+                        {
+                            foreach (var item in Model.UltimasTransacoes)
+                            {
+                                <tr>
+                                    <td class="text-muted small">@item.DataFormatada</td>
+                                    <td>
+                                        <div class="fw-semibold">@item.Descricao</div>
+                                        <div class="text-muted small">@item.FormaPagamento</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            <i class="bi @item.CategoriaIcone me-1" style="color: @item.CategoriaCor"></i>
+                                            @item.CategoriaNome
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (item.CriadoPorIA)
+                                        {
+                                            <span class="badge-ai" title="Extraído automaticamente do arquivo: @item.NomeArquivoOrigem">
+                                                <i class="bi bi-robot"></i> IA (@item.NomeArquivoOrigem)
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-muted border">
+                                                <i class="bi bi-pencil-square"></i> Manual
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="fw-bold @(item.Tipo == OrcamentoPessoal.Models.TipoTransacao.Receita ? "text-success" : "text-danger")">
+                                        @(item.Tipo == OrcamentoPessoal.Models.TipoTransacao.Receita ? "+" : "-") @item.ValorFormatado
+                                    </td>
+                                    <td>
+                                        <span class="@(item.Tipo == OrcamentoPessoal.Models.TipoTransacao.Receita ? "badge-finance-receita" : "badge-finance-despesa")">
+                                            @item.Tipo
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    Nenhuma transação encontrada no momento.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Card: Arquivos Financeiros Analisados por IA -->
+        <div class="card-app">
+            <div class="card-app-header">
+                <h3 class="card-app-title">
+                    <i class="bi bi-cpu-fill text-info"></i>
+                    <span>Documentos & Arquivos Analisados (IA Parser)</span>
+                </h3>
+                <span class="badge bg-info-subtle text-info border border-info-subtle small">Pipeline IA</span>
+            </div>
+            <div class="card-app-body p-0">
+                <div class="table-responsive">
+                    <table class="table-app">
+                        <thead>
+                            <tr>
+                                <th>Arquivo</th>
+                                <th>Data Envio</th>
+                                <th>Lançamentos</th>
+                                <th>Confiança IA</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.DocumentosRecentes != null && Model.DocumentosRecentes.Any())
+                            {
+                                foreach (var doc in Model.DocumentosRecentes)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <i class="bi @doc.IconeCss fs-4"></i>
+                                                <div>
+                                                    <div class="fw-semibold text-dark">@doc.NomeArquivo</div>
+                                                    <small class="text-muted">@doc.TamanhoFormatado &bull; @doc.ResumoIA</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-muted small">@doc.DataFormatada</td>
+                                        <td>
+                                            <span class="fw-semibold">@doc.QtdTransacoesExtraidas</span> transações
+                                            @if (doc.ValorTotalDetectado > 0)
+                                            {
+                                                <div class="text-muted small">@doc.ValorDetectadoFormatado</div>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
+                                                    <div class="progress-bar bg-info" role="progressbar" style="width: @doc.ConfiancaIA%;" aria-valuenow="@doc.ConfiancaIA" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                                <small class="fw-bold text-muted">@doc.ConfiancaIA%</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="@doc.BadgeStatusCss">
+                                                @doc.Status
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        Nenhum documento processado ainda.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coluna Direita: Categorias de Orçamento e Upload Mockado -->
+    <div class="col-12 col-lg-4">
+        <!-- Metas por Categoria -->
+        <div class="card-app mb-4">
+            <div class="card-app-header">
+                <h3 class="card-app-title">
+                    <i class="bi bi-pie-chart text-primary"></i>
+                    <span>Orçamento por Categoria</span>
+                </h3>
+            </div>
+            <div class="card-app-body">
+                @if (Model != null && Model.CategoriasResumo != null)
+                {
+                    foreach (var cat in Model.CategoriasResumo)
+                    {
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="fw-semibold small text-dark">
+                                    <i class="bi @cat.IconeCss me-1" style="color: @cat.CorHex"></i>
+                                    @cat.Nome
+                                </span>
+                                <span class="text-muted small">@cat.PercentualConsumido%</span>
+                            </div>
+                            <div class="progress mb-1" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar"
+                                     style="width: @cat.PercentualConsumido%; background-color: @cat.CorHex;"
+                                     aria-valuenow="@cat.PercentualConsumido" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted" style="font-size: 0.72rem;">
+                                <span>Gasto: @cat.TotalGastoFormatado</span>
+                                <span>Teto: @cat.OrcamentoFormatado</span>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Card de Upload Mock de Arquivos Financeiros -->
+        <div class="card-app">
+            <div class="card-app-header">
+                <h3 class="card-app-title">
+                    <i class="bi bi-cloud-arrow-up text-primary"></i>
+                    <span>Simulador de Upload (IA)</span>
+                </h3>
+            </div>
+            <div class="card-app-body text-center py-4">
+                <div class="p-4 border-2 border-dashed rounded-3 bg-light mb-3" style="border: 2px dashed #cbd5e1;">
+                    <i class="bi bi-file-earmark-pdf fs-1 text-primary mb-2 d-block"></i>
+                    <p class="fw-semibold mb-1 text-dark">Arraste seus extratos ou planilhas aqui</p>
+                    <p class="text-muted small mb-3">Formatos aceitos: PDF, XLSX, CSV, DOCX</p>
+                    <button type="button" class="btn btn-sm btn-app-primary" onclick="alert('Área de envio de documentos configurada para teste!')">
+                        <i class="bi bi-folder2-open me-1"></i> Selecionar Arquivo
+                    </button>
+                </div>
+                <small class="text-muted d-block">
+                    A IA realizará a extração e padronização contábil dos dados.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>

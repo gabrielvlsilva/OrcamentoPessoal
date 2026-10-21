@@ -1,19 +1,84 @@
 ﻿@{
-    ViewBag.Title = "Contact";
+    ViewBag.Title = "Contato";
+    ViewBag.PageTitle = "Contato & Suporte";
 }
-<main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
-    <h3>@ViewBag.Message</h3>
 
-    <address>
-        One Microsoft Way<br />
-        Redmond, WA 98052-6399<br />
-        <abbr title="Phone">P:</abbr>
-        425.555.0100
-    </address>
+<div class="row g-4">
+    <div class="col-12 col-lg-7">
+        <div class="card-app">
+            <div class="card-app-header">
+                <h3 class="card-app-title">
+                    <i class="bi bi-envelope text-primary"></i>
+                    <span>Fale Conosco / Suporte Acadêmico</span>
+                </h3>
+            </div>
+            <div class="card-app-body">
+                <p class="text-secondary small mb-4">
+                    Tem dúvidas, sugestões ou interesse no desenvolvimento do módulo de IA? Envie uma mensagem através dos canais de suporte.
+                </p>
 
-    <address>
-        <strong>Support:</strong>   <a href="mailto:Support@example.com">Support@example.com</a><br />
-        <strong>Marketing:</strong> <a href="mailto:Marketing@example.com">Marketing@example.com</a>
-    </address>
-</main>
+                <form onsubmit="event.preventDefault(); alert('Mensagem enviada com sucesso no ambiente mock!');">
+                    <div class="mb-3">
+                        <label class="form-label">Nome Completo</label>
+                        <input type="text" class="form-control" placeholder="Seu nome" value="Gabriel Silva Santos" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">E-mail para Retorno</label>
+                        <input type="email" class="form-control" placeholder="seuemail@exemplo.com" value="gabriel.silva@universidade.edu.br" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Assunto</label>
+                        <input type="text" class="form-control" placeholder="Ex: Sugestão para o leitor de PDF com IA" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mensagem</label>
+                        <textarea class="form-control" rows="4" placeholder="Descreva sua solicitação ou feedback..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-app-primary">
+                        <i class="bi bi-send me-1"></i> Enviar Mensagem
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+        <div class="card-app mb-4">
+            <div class="card-app-header">
+                <h3 class="card-app-title">
+                    <i class="bi bi-geo-alt text-primary"></i>
+                    <span>Informações do Projeto</span>
+                </h3>
+            </div>
+            <div class="card-app-body">
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <i class="bi bi-mortarboard fs-4 text-primary"></i>
+                    <div>
+                        <strong class="d-block text-dark">Instituição de Ensino</strong>
+                        <span class="text-muted small">Faculdade de Tecnologia &bull; Ciência da Computação / Sistemas de Informação</span>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <i class="bi bi-lightbulb fs-4 text-warning"></i>
+                    <div>
+                        <strong class="d-block text-dark">Escopo de Pesquisa</strong>
+                        <span class="text-muted small">Finanças Pessoais, Inteligência Artificial Aplicada e Automação de Processos Contábeis</span>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-shield-check fs-4 text-success"></i>
+                    <div>
+                        <strong class="d-block text-dark">Privacidade e Dados</strong>
+                        <span class="text-muted small">Dados mockados para desenvolvimento seguro e sem exposição de informações bancárias reais.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

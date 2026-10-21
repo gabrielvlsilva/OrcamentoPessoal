@@ -1,8 +1,22 @@
-﻿
-@{
-    ViewBag.Title = "_ErrorModal";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
-
-<h2>_ErrorModal</h2>
-
+﻿<!-- Modal Reutilizável de Erro (Bootstrap 5) -->
+<div class="modal fade" id="modalErro" tabindex="-1" aria-labelledby="modalErroLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title d-flex align-items-center gap-2" id="modalErroLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span id="modalErroTitulo">Ops! Ocorreu um erro</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body py-4">
+                <p class="mb-0 text-secondary" id="modalErroMensagem">
+                    Não foi possível concluir a operação solicitada. Por favor, tente novamente.
+                </p>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
