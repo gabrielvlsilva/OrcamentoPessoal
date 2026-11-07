@@ -1,4 +1,3 @@
-using System;
 using System.Web.Mvc;
 using OrcamentoPessoal.Database;
 using OrcamentoPessoal.Models;
@@ -7,6 +6,19 @@ namespace OrcamentoPessoal.Controllers
 {
     public class HomeController : Controller
     {
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            var action = filterContext.ActionDescriptor.ActionName;
+
+            if (action != "Login" && action != "Logout" && Session["UsuarioLogado"] == null)
+            {
+                filterContext.Result = RedirectToAction("Login");
+                return;
+            }
+
+            base.OnActionExecuting(filterContext);
+        }
+
         // GET: / ou /Home/Index (Dashboard principal com menu lateral responsivo)
         public ActionResult Index()
         {
@@ -30,13 +42,7 @@ namespace OrcamentoPessoal.Controllers
                 return RedirectToAction("Index");
             }
 
-            var model = new UserLogin
-            {
-                // Sugere credenciais mock para facilitar a validação inicial do usuário
-                Usuario = "123.456.789-09"
-            };
-
-            return View(model);
+            return View(new UserLogin());
         }
 
         // POST: /Home/Login
@@ -49,27 +55,22 @@ namespace OrcamentoPessoal.Controllers
                 return View(login);
             }
 
-            bool valido = HomeDB.ValidaLogin(login, out string errorMsg, out Usuario usuario);
+            bool valido = UsuarioDB.Autenticar(login, out Usuario usuario, out string errorMsg);
 
             if (!valido || usuario == null)
             {
-                ViewBag.Message = string.IsNullOrEmpty(errorMsg) ? "CPF ou Senha inválidos!" : errorMsg;
+                ViewBag.Message = string.IsNullOrEmpty(errorMsg) ? "CPF ou senha inválidos." : errorMsg;
                 return View(login);
             }
 
-            if (!usuario.Ativo)
-            {
-                ViewBag.Message = "Este usuário encontra-se desativado.";
-                return View(login);
-            }
-
-            // Armazena sessão do usuário mockado
             Session["UsuarioLogado"] = usuario;
 
             return RedirectToAction("Index");
         }
 
-        // GET: /Home/Logout
+        // POST: /Home/Logout
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Logout()
         {
             Session.Clear();
@@ -81,26 +82,25 @@ namespace OrcamentoPessoal.Controllers
         public ActionResult Transacoes()
         {
             ViewBag.ActiveMenu = "Transacoes";
-            var transacoes = HomeDB.ObterTransacoesMock();
-            return View("Index", HomeDB.ObterDadosDashboard());
+            return View("Index", HomeDB.ObterDadosDashboard(Session["UsuarioLogado"] as Usuario));
         }
 
         public ActionResult ImportadorIA()
         {
             ViewBag.ActiveMenu = "ImportadorIA";
-            return View("Index", HomeDB.ObterDadosDashboard());
+            return View("Index", HomeDB.ObterDadosDashboard(Session["UsuarioLogado"] as Usuario));
         }
 
         public ActionResult Categorias()
         {
             ViewBag.ActiveMenu = "Categorias";
-            return View("Index", HomeDB.ObterDadosDashboard());
+            return View("Index", HomeDB.ObterDadosDashboard(Session["UsuarioLogado"] as Usuario));
         }
 
         public ActionResult Relatorios()
         {
             ViewBag.ActiveMenu = "Relatorios";
-            return View("Index", HomeDB.ObterDadosDashboard());
+            return View("Index", HomeDB.ObterDadosDashboard(Session["UsuarioLogado"] as Usuario));
         }
     }
 }

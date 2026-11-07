@@ -6,17 +6,15 @@ namespace OrcamentoPessoal.Models
 {
     public class UserLogin
     {
-        [Required(ErrorMessage = "Informe o seu CPF ou Usuário")]
-        [Display(Name = "CPF ou Usuário")]
+        [Required(ErrorMessage = "Informe o seu CPF")]
+        [Display(Name = "CPF")]
         public string Usuario { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Informe a sua senha")]
+        [StringLength(1024, MinimumLength = 1, ErrorMessage = "A senha deve ter no máximo 1024 caracteres")]
         [DataType(DataType.Password)]
         [Display(Name = "Senha")]
         public string Senha { get; set; } = string.Empty;
-
-        [Display(Name = "Lembrar meu acesso")]
-        public bool LembrarMe { get; set; } = false;
 
         /// <summary>
         /// Retorna apenas os dígitos do CPF, removendo pontuações

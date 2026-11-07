@@ -87,18 +87,6 @@
                 <p class="login-form-subtitle">Digite seus dados para gerenciar seu orçamento</p>
             </div>
 
-            <!-- Card com as Credenciais Mockadas para teste rápido -->
-            <div class="mock-credentials-card">
-                <i class="bi bi-info-circle-fill"></i>
-                <div class="mock-credentials-text">
-                    <strong>Ambiente Mock (Sem Banco):</strong><br />
-                    CPF: <code>123.456.789-09</code> &bull; Senha: <code>senha123</code>
-                </div>
-                <button type="button" class="btn-fill-mock" id="btnFillDemo" title="Preencher formulário automaticamente">
-                    Preencher
-                </button>
-            </div>
-
             @if (ViewBag.Message != null)
             {
                 <div class="alert alert-danger d-flex align-items-center gap-2 py-2 mb-3 rounded-3" role="alert">
@@ -113,14 +101,14 @@
                 @Html.ValidationSummary(true, "", new { @class = "text-danger small mb-3" })
 
                 <div class="mb-3">
-                    <label for="txtUsuario" class="form-label">CPF ou Usuário</label>
+                    <label for="txtUsuario" class="form-label">CPF</label>
                     <div class="input-icon-group">
                         <i class="bi bi-person input-icon-prefix"></i>
                         @Html.TextBoxFor(model => model.Usuario, new
                         {
                             @class = "form-control",
                             id = "txtUsuario",
-                            placeholder = "123.456.789-09",
+                            placeholder = "Digite seu CPF",
                             autocomplete = "username",
                             required = "required"
                         })
@@ -147,29 +135,12 @@
                     @Html.ValidationMessageFor(model => model.Senha, "", new { @class = "text-danger small mt-1 d-block" })
                 </div>
 
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                    <div class="form-check">
-                        @Html.CheckBoxFor(model => model.LembrarMe, new { @class = "form-check-input", id = "chkLembrar" })
-                        <label class="form-check-label small text-muted" for="chkLembrar">
-                            Lembrar meu acesso
-                        </label>
-                    </div>
-                    <a href="javascript:void(0)" class="small text-primary fw-semibold" id="linkForgotPassword">
-                        Esqueceu a senha?
-                    </a>
-                </div>
-
                 <button type="submit" class="btn-login-submit" id="btnLogin">
                     <i class="bi bi-box-arrow-in-right"></i>
                     <span>Entrar no Sistema</span>
                 </button>
             }
 
-            <div class="text-center mt-4">
-                <span class="text-muted small">
-                    Ainda não tem conta? <span class="text-dark fw-semibold">Acesso pré-configurado para avaliação</span>
-                </span>
-            </div>
         </div>
     </div>
 
@@ -181,22 +152,10 @@
         (function () {
             'use strict';
 
-            var btnFill = document.getElementById('btnFillDemo');
             var txtUser = document.getElementById('txtUsuario');
             var txtPass = document.getElementById('txtSenha');
             var btnToggle = document.getElementById('btnTogglePassword');
             var iconEye = document.getElementById('iconEye');
-            var linkForgot = document.getElementById('linkForgotPassword');
-
-            // Preenchimento de dados de teste (Mock)
-            if (btnFill && txtUser && txtPass) {
-                btnFill.addEventListener('click', function () {
-                    txtUser.value = '123.456.789-09';
-                    txtPass.value = 'senha123';
-                    txtUser.classList.remove('is-invalid');
-                    txtPass.classList.remove('is-invalid');
-                });
-            }
 
             // Alternar visibilidade da senha
             if (btnToggle && txtPass && iconEye) {
@@ -227,13 +186,6 @@
                         }
                         e.target.value = val;
                     }
-                });
-            }
-
-            // Feedback de Esqueceu a Senha
-            if (linkForgot) {
-                linkForgot.addEventListener('click', function () {
-                    alert('Ambiente de Demonstração (Mock):\nUtilize o CPF: 123.456.789-09 e a senha: senha123 para entrar.');
                 });
             }
         })();

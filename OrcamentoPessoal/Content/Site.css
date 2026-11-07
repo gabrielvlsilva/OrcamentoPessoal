@@ -981,49 +981,6 @@ a:hover {
     margin: 0;
 }
 
-/* Bloco Informativo de Mock (Demonstração) */
-.mock-credentials-card {
-    background: #f0fdf4;
-    border: 1px dashed #86efac;
-    border-radius: var(--radius-md);
-    padding: 0.85rem 1rem;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.75rem;
-}
-
-.mock-credentials-card i {
-    font-size: 1.25rem;
-    color: #16a34a;
-    margin-top: 0.1rem;
-}
-
-.mock-credentials-text {
-    font-size: 0.82rem;
-    color: #166534;
-    line-height: 1.4;
-    flex: 1;
-}
-
-.btn-fill-mock {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.65rem;
-    background: #16a34a;
-    color: white;
-    border: none;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-weight: 600;
-    white-space: nowrap;
-    transition: background 0.2s ease;
-}
-
-.btn-fill-mock:hover {
-    background: #15803d;
-}
-
 .input-icon-group {
     position: relative;
     display: flex;

@@ -1,77 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using OrcamentoPessoal.Models;
 
 namespace OrcamentoPessoal.Database
 {
     public class HomeDB
     {
-        private static readonly Usuario UsuarioMock = new Usuario
-        {
-            Id = 1,
-            Nome = "Gabriel Silva Santos",
-            CPF = "123.456.789-09",
-            Email = "gabriel.silva@universidade.edu.br",
-            Telefone = "(11) 98765-4321",
-            Perfil = "Administrador & Pesquisador IA",
-            SenhaUser = "senha123",
-            ConfirmaSenha = "senha123",
-            Ativo = true,
-            DataCadastro = new DateTime(2024, 2, 10)
-        };
-
-        public static bool ValidaLogin(UserLogin login, out string errorMsg)
-        {
-            return ValidaLogin(login, out errorMsg, out _);
-        }
-
-        public static bool ValidaLogin(UserLogin login, out string errorMsg, out Usuario usuarioLogado)
-        {
-            errorMsg = string.Empty;
-            usuarioLogado = null;
-
-            if (login == null)
-            {
-                errorMsg = "Dados de login não informados.";
-                return false;
-            }
-
-            string inputUsuario = login.Usuario?.Trim() ?? string.Empty;
-            string inputSenha = login.Senha ?? string.Empty;
-
-            // Extrai apenas dígitos para comparação flexível de CPF
-            string cpfDigitadoLimpo = Regex.Replace(inputUsuario, @"[^\d]", "");
-            string cpfMockLimpo = Regex.Replace(UsuarioMock.CPF, @"[^\d]", "");
-
-            bool usuarioValido = false;
-
-            // Aceita CPF formatado ou sem pontuação, ou "admin" para facilitar testes
-            if (!string.IsNullOrEmpty(cpfDigitadoLimpo) && cpfDigitadoLimpo == cpfMockLimpo)
-            {
-                usuarioValido = true;
-            }
-            else if (inputUsuario.Equals("admin", StringComparison.OrdinalIgnoreCase) ||
-                     inputUsuario.Equals("administrador", StringComparison.OrdinalIgnoreCase))
-            {
-                usuarioValido = true;
-            }
-
-            bool senhaValida = (inputSenha == UsuarioMock.SenhaUser || inputSenha == "123456" || inputSenha == "admin");
-
-            if (usuarioValido && senhaValida)
-            {
-                usuarioLogado = UsuarioMock;
-                return true;
-            }
-
-            errorMsg = "Credenciais incorretas! Dica de teste: use CPF 123.456.789-09 e a senha senha123.";
-            return false;
-        }
-
         public static DashboardViewModel ObterDadosDashboard(Usuario usuario = null)
         {
-            var user = usuario ?? UsuarioMock;
+            var user = usuario ?? new Usuario
+            {
+                Nome = "Usuário",
+                Perfil = "Usuário"
+            };
 
             var vm = new DashboardViewModel
             {

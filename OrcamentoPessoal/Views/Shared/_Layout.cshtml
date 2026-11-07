@@ -1,10 +1,10 @@
 ﻿@using OrcamentoPessoal.Models
 @{
     var usuarioLogado = Session["UsuarioLogado"] as Usuario;
-    var nomeUsuario = usuarioLogado != null ? usuarioLogado.Nome : "Gabriel Silva Santos";
-    var primeiroNome = usuarioLogado != null ? usuarioLogado.PrimeiroNome : "Gabriel";
-    var iniciaisUsuario = usuarioLogado != null ? usuarioLogado.Iniciais : "GS";
-    var perfilUsuario = usuarioLogado != null ? usuarioLogado.Perfil : "Administrador";
+    var nomeUsuario = usuarioLogado != null ? usuarioLogado.Nome : "Usuário";
+    var primeiroNome = usuarioLogado != null ? usuarioLogado.PrimeiroNome : "Usuário";
+    var iniciaisUsuario = usuarioLogado != null ? usuarioLogado.Iniciais : "US";
+    var perfilUsuario = usuarioLogado != null ? usuarioLogado.Perfil : "Usuário";
     string currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "Index";
     string activeMenu = ViewBag.ActiveMenu as string ?? currentAction;
 }
@@ -117,9 +117,13 @@
                         <span class="user-role">@perfilUsuario</span>
                     </div>
                 </div>
-                <a href="@Url.Action("Logout", "Home")" class="btn-sidebar-logout" title="Sair do Sistema" aria-label="Sair do Sistema">
-                    <i class="bi bi-box-arrow-right"></i>
-                </a>
+                @using (Html.BeginForm("Logout", "Home", FormMethod.Post, new { @class = "d-inline" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-sidebar-logout" title="Sair do Sistema" aria-label="Sair do Sistema">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                }
             </div>
         </aside>
 
@@ -171,9 +175,13 @@
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item text-danger" href="@Url.Action("Logout", "Home")">
-                                    <i class="bi bi-box-arrow-right me-2"></i> Encerrar Sessão
-                                </a>
+                                @using (Html.BeginForm("Logout", "Home", FormMethod.Post, new { @class = "m-0" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="bi bi-box-arrow-right me-2"></i> Encerrar Sessão
+                                    </button>
+                                }
                             </li>
                         </ul>
                     </div>

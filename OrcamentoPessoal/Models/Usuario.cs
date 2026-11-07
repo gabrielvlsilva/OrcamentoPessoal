@@ -5,7 +5,7 @@ namespace OrcamentoPessoal.Models
 {
     public class Usuario
     {
-        public int Id { get; set; } = 1;
+        public uint Id { get; set; }
 
         [Required(ErrorMessage = "Informe o Nome do Usuário")]
         [Display(Name = "Nome Completo")]
@@ -22,16 +22,6 @@ namespace OrcamentoPessoal.Models
 
         [Display(Name = "Telefone / Celular")]
         public string Telefone { get; set; } = string.Empty;
-
-        [DataType(DataType.Password)]
-        [Display(Name = "Senha")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "A senha deve ter no mínimo 6 caracteres")]
-        public string SenhaUser { get; set; } = string.Empty;
-
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirmar Senha")]
-        [Compare("SenhaUser", ErrorMessage = "As senhas digitadas não conferem")]
-        public string ConfirmaSenha { get; set; } = string.Empty;
 
         [Display(Name = "Perfil")]
         public string Perfil { get; set; } = "Administrador";
