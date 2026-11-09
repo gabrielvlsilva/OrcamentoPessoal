@@ -917,6 +917,240 @@ a:hover {
     color: var(--slate-400);
 }
 
+/* --------------------------------------------------------------------------
+   9. Relatórios Financeiros
+   -------------------------------------------------------------------------- */
+.relatorios-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 2rem 2.25rem;
+    color: var(--surface-white);
+    background: linear-gradient(120deg, #111827 0%, #1e1b4b 58%, #312e81 100%);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-glow-ai);
+    overflow: hidden;
+    position: relative;
+}
+
+.relatorios-hero::after {
+    content: "";
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    top: -125px;
+    right: 15%;
+    border-radius: 50%;
+    background: rgba(6, 182, 212, 0.15);
+    filter: blur(2px);
+}
+
+.relatorios-hero-content,
+.relatorios-periodo-resumo {
+    position: relative;
+    z-index: 1;
+}
+
+.relatorios-eyebrow {
+    display: inline-block;
+    margin-bottom: 0.65rem;
+    color: #a5f3fc;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.relatorios-periodo-resumo {
+    min-width: 205px;
+    padding: 1rem 1.15rem;
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.relatorios-periodo-resumo span {
+    color: #a5b4fc;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+.relatorios-periodo-resumo strong {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    text-transform: capitalize;
+}
+
+.relatorios-periodo-resumo small {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.relatorios-aviso {
+    padding: 0.85rem 1rem;
+    color: #854d0e;
+    background: #fefce8;
+    border: 1px solid #fde68a;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+}
+
+.report-kpi {
+    padding: 1.25rem;
+    border: 1px solid var(--slate-200);
+    border-left-width: 4px;
+    border-radius: var(--radius-lg);
+    background: var(--surface-white);
+    box-shadow: var(--shadow-card);
+}
+
+.report-kpi > div span {
+    color: var(--slate-500);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.report-kpi > div i {
+    font-size: 1.25rem;
+}
+
+.report-kpi strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--slate-900);
+    font-family: var(--font-heading);
+    font-size: 1.45rem;
+}
+
+.report-kpi small {
+    display: block;
+    color: var(--slate-500);
+    font-size: 0.72rem;
+}
+
+.report-kpi-receita { border-left-color: var(--color-receita); }
+.report-kpi-receita > div i { color: var(--color-receita); }
+.report-kpi-despesa { border-left-color: var(--color-despesa); }
+.report-kpi-despesa > div i { color: var(--color-despesa); }
+.report-kpi-saldo { border-left-color: var(--primary-color); }
+.report-kpi-saldo > div i { color: var(--primary-color); }
+.report-kpi-arquivos { border-left-color: var(--ai-purple); }
+.report-kpi-arquivos > div i { color: var(--ai-purple); }
+
+.report-month-row {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 1rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--slate-100);
+}
+
+.report-month-row:last-child { border-bottom: 0; }
+
+.report-month-label {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.report-month-label strong {
+    color: var(--slate-800);
+    font-size: 0.82rem;
+    text-transform: capitalize;
+}
+
+.report-month-label small { color: var(--slate-400); font-size: 0.7rem; }
+
+.report-month-bars { display: flex; flex-direction: column; gap: 0.45rem; }
+
+.report-bar-line {
+    display: grid;
+    grid-template-columns: 14px minmax(50px, 1fr) minmax(88px, auto);
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.report-bar-line > i { font-size: 0.75rem; }
+.report-bar-line > small { color: var(--slate-600); font-size: 0.72rem; text-align: right; }
+
+.report-bar-track {
+    display: block;
+    height: 8px;
+    background: var(--slate-100);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.report-bar-fill {
+    display: block;
+    height: 100%;
+    min-width: 0;
+    border-radius: inherit;
+    transition: width 0.35s ease;
+}
+
+.report-bar-receita { background: linear-gradient(90deg, #10b981, #34d399); }
+.report-bar-despesa { background: linear-gradient(90deg, #f97316, #fb7185); }
+.report-category-track { height: 7px; }
+.report-category-row + .report-category-row { margin-top: 1.15rem; }
+
+.report-legend {
+    display: flex;
+    gap: 1rem;
+    color: var(--slate-500);
+    font-size: 0.74rem;
+}
+
+.report-legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.report-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.report-empty-state {
+    min-height: 190px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    color: var(--slate-400);
+    text-align: center;
+}
+
+.report-empty-state i { font-size: 1.7rem; }
+.report-empty-state p { margin: 0; font-size: 0.86rem; }
+.report-empty-compact { min-height: 125px; }
+
+.report-insight-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    margin-bottom: 1.1rem;
+}
+
+.report-insight-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: grid;
+    place-items: center;
+    color: var(--primary-color);
+    background: var(--primary-light);
+    border-radius: var(--radius-sm);
+}
+
+.report-insight-row strong { color: var(--slate-800); font-size: 0.85rem; }
+.report-insight-row p { margin: 0.2rem 0 0; color: var(--slate-500); font-size: 0.78rem; line-height: 1.45; }
+
+@media (max-width: 767.98px) {
+    .relatorios-hero { align-items: stretch; flex-direction: column; padding: 1.5rem; gap: 1.25rem; }
+    .relatorios-periodo-resumo { min-width: 0; }
+}
+
 /* Coluna Formulário (Direita) */
 .login-form-side {
     flex: 1.1;

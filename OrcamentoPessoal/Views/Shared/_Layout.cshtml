@@ -87,22 +87,15 @@
                 <div class="nav-section-title">Análise & Gestão</div>
                 <ul class="sidebar-menu">
                     <li class="sidebar-item">
-                        <span class="sidebar-link text-muted" aria-disabled="true" title="Funcionalidade em desenvolvimento" style="opacity: 0.65; cursor: not-allowed;">
+                        <a href="@Url.Action("Relatorios", "Home")" class="sidebar-link @(activeMenu == "Relatorios" ? "active" : "")">
                             <i class="bi bi-bar-chart-line-fill"></i>
                             <span>Relatórios & Planilhas</span>
-                            <small class="ms-auto">Em desenvolvimento</small>
-                        </span>
+                        </a>
                     </li>
                     <li class="sidebar-item">
                         <a href="@Url.Action("About", "Home")" class="sidebar-link @(activeMenu == "About" ? "active" : "")">
                             <i class="bi bi-info-circle-fill"></i>
                             <span>Sobre o Projeto</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="@Url.Action("Contact", "Home")" class="sidebar-link @(activeMenu == "Contact" ? "active" : "")">
-                            <i class="bi bi-envelope-fill"></i>
-                            <span>Contato & Suporte</span>
                         </a>
                     </li>
                 </ul>

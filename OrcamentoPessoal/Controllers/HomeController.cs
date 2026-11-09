@@ -44,11 +44,6 @@ namespace OrcamentoPessoal.Controllers
             return View();
         }
 
-        public ActionResult Contact()
-        {
-            return View();
-        }
-
         // POST: /Home/ImportarArquivo
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -330,7 +325,75 @@ namespace OrcamentoPessoal.Controllers
         public ActionResult Relatorios()
         {
             ViewBag.ActiveMenu = "Relatorios";
-            return View("Index", ObterDashboardAtual(Session["UsuarioLogado"] as Usuario));
+            ViewBag.PageTitle = "Relatórios & Planilhas";
+            ViewBag.RelatorioErro = TempData["RelatorioErro"];
+
+            var usuario = Session["UsuarioLogado"] as Usuario;
+            DateTime hoje = DateTime.Today;
+            int mes = hoje.Month;
+            int ano = hoje.Year;
+            bool periodoInformado = Request.QueryString["mes"] != null || Request.QueryString["ano"] != null;
+            bool periodoValido = !periodoInformado ||
+                (int.TryParse(Request.QueryString["mes"], out mes) && int.TryParse(Request.QueryString["ano"], out ano)
+                    && mes >= 1 && mes <= 12 && ano >= 2000 && ano <= 2100);
+
+            if (!periodoValido)
+            {
+                mes = hoje.Month;
+                ano = hoje.Year;
+            }
+
+            string errorMsg;
+            var relatorio = RelatorioDB.Obter(usuario.Id, ano, mes, out errorMsg);
+            if (!string.IsNullOrEmpty(errorMsg))
+            {
+                relatorio.Erro = "Não foi possível carregar os dados do relatório. Confira a conexão com o banco de dados.";
+            }
+            else if (!periodoValido)
+            {
+                relatorio.Erro = "O período informado é inválido. Exibindo o mês atual.";
+            }
+
+            return View(relatorio);
+        }
+
+        public ActionResult ExportarRelatorio(int? mes, int? ano)
+        {
+            var usuario = Session["UsuarioLogado"] as Usuario;
+            DateTime hoje = DateTime.Today;
+            int mesReferencia = mes.HasValue && mes.Value >= 1 && mes.Value <= 12 ? mes.Value : hoje.Month;
+            int anoReferencia = ano.HasValue && ano.Value >= 2000 && ano.Value <= 2100 ? ano.Value : hoje.Year;
+            DateTime inicio = new DateTime(anoReferencia, mesReferencia, 1);
+            string errorMsg;
+            var lancamentos = RelatorioDB.ObterLancamentos(usuario.Id, inicio, inicio.AddMonths(1), null, out errorMsg);
+
+            if (!string.IsNullOrEmpty(errorMsg) || lancamentos == null)
+            {
+                TempData["RelatorioErro"] = "Não foi possível exportar os dados do período. Tente novamente.";
+                return RedirectToAction("Relatorios", new { mes = mesReferencia, ano = anoReferencia });
+            }
+
+            var conteudo = new StringBuilder();
+            conteudo.AppendLine("Data;Tipo;Descrição;Categoria;Forma de pagamento;Valor;Arquivo de origem");
+
+            foreach (var lancamento in lancamentos)
+            {
+                conteudo.Append(CampoCsv(lancamento.DataTransacao.HasValue ? lancamento.DataTransacao.Value.ToString("yyyy-MM-dd") : string.Empty)).Append(';')
+                    .Append(CampoCsv(lancamento.Tipo.ToString())).Append(';')
+                    .Append(CampoCsv(lancamento.Descricao)).Append(';')
+                    .Append(CampoCsv(lancamento.CategoriaNome)).Append(';')
+                    .Append(CampoCsv(lancamento.FormaPagamento)).Append(';')
+                    .Append(CampoCsv(lancamento.Valor.ToString("0.00", CultureInfo.GetCultureInfo("pt-BR")))).Append(';')
+                    .Append(CampoCsv(lancamento.NomeArquivoOrigem)).AppendLine();
+            }
+
+            byte[] corpo = Encoding.UTF8.GetBytes(conteudo.ToString());
+            byte[] preambulo = Encoding.UTF8.GetPreamble();
+            byte[] arquivo = new byte[preambulo.Length + corpo.Length];
+            Buffer.BlockCopy(preambulo, 0, arquivo, 0, preambulo.Length);
+            Buffer.BlockCopy(corpo, 0, arquivo, preambulo.Length, corpo.Length);
+
+            return File(arquivo, "text/csv", string.Format("relatorio-{0}-{1:00}.csv", anoReferencia, mesReferencia));
         }
 
         private DashboardViewModel ObterDashboardAtual(Usuario usuario)
@@ -361,6 +424,18 @@ namespace OrcamentoPessoal.Controllers
                 : CultureInfo.InvariantCulture;
 
             return decimal.TryParse(valorNormalizado, NumberStyles.Number, cultura, out valor);
+        }
+
+        private static string CampoCsv(string valor)
+        {
+            valor = valor ?? string.Empty;
+            string inicio = valor.TrimStart(' ', '\t', '\r', '\n');
+            if (inicio.Length > 0 && "=+-@".IndexOf(inicio[0]) >= 0)
+            {
+                valor = "'" + valor;
+            }
+
+            return "\"" + valor.Replace("\"", "\"\"") + "\"";
         }
 
         private static string GerarIdentificadorArquivo(uint usuarioId, byte[] conteudoArquivo)

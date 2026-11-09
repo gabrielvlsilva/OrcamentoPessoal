@@ -1,0 +1,304 @@
+﻿@model OrcamentoPessoal.Models.RelatoriosViewModel
+@using System.Globalization
+@using System.Linq
+@{
+    ViewBag.Title = "Relatórios & Planilhas";
+    ViewBag.PageTitle = "Relatórios & Planilhas";
+    var cultura = CultureInfo.GetCultureInfo("pt-BR");
+}
+
+<section class="relatorios-hero mb-4">
+    <div class="relatorios-hero-content">
+        <span class="relatorios-eyebrow"><i class="bi bi-stars me-1"></i> PAINEL FINANCEIRO</span>
+        <h1 class="h2 fw-bold mb-2">Seu dinheiro, em perspectiva.</h1>
+        <p class="mb-0 text-white-50">Acompanhe receitas, despesas e os lançamentos importados em um só lugar.</p>
+    </div>
+    <div class="relatorios-periodo-resumo">
+        <span>PERÍODO ANALISADO</span>
+        <strong>@Model.PeriodoNome</strong>
+        <small>@Model.TotalLancamentos lançamento(s) concluído(s)</small>
+    </div>
+</section>
+
+@if (ViewBag.RelatorioErro != null || !string.IsNullOrWhiteSpace(Model.Erro))
+{
+    <div class="relatorios-aviso mb-4" role="status">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        @(ViewBag.RelatorioErro ?? Model.Erro)
+    </div>
+}
+
+<section class="card-app mb-4">
+    <div class="card-app-body py-3">
+        <div class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-3">
+            <div>
+                <h2 class="h6 fw-bold mb-1">Escolha o período</h2>
+                <p class="text-muted small mb-0">Os indicadores consideram lançamentos concluídos com data no mês selecionado.</p>
+            </div>
+            <div class="d-flex flex-wrap align-items-end gap-2">
+                @using (Html.BeginForm("Relatorios", "Home", FormMethod.Get, new { @class = "d-flex flex-wrap align-items-end gap-2" }))
+                {
+                    <div>
+                        <label for="mes" class="form-label small fw-semibold mb-1">Mês</label>
+                        <select id="mes" name="mes" class="form-select form-select-sm">
+                            @for (int mes = 1; mes <= 12; mes++)
+                            {
+                                string nomeMes = cultura.TextInfo.ToTitleCase(new DateTime(Model.AnoReferencia, mes, 1).ToString("MMMM", cultura));
+                                <option value="@mes" @(Model.MesReferencia == mes ? "selected" : "")>@nomeMes</option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label for="ano" class="form-label small fw-semibold mb-1">Ano</label>
+                        <input id="ano" name="ano" type="number" class="form-control form-control-sm" min="2000" max="2100" value="@Model.AnoReferencia" />
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-app-primary">
+                        <i class="bi bi-funnel me-1"></i> Aplicar
+                    </button>
+                }
+                <a href="@Url.Action("ExportarRelatorio", "Home", new { mes = Model.MesReferencia, ano = Model.AnoReferencia })" class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-file-earmark-spreadsheet me-1"></i> Baixar planilha
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <article class="report-kpi report-kpi-receita h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <span>Receitas</span><i class="bi bi-arrow-down-left-circle"></i>
+            </div>
+            <strong>@Model.ReceitasFormatado</strong>
+            <small>@Model.QuantidadeReceitas lançamento(s) · anterior: @Model.ReceitasMesAnteriorFormatado</small>
+        </article>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <article class="report-kpi report-kpi-despesa h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <span>Despesas</span><i class="bi bi-arrow-up-right-circle"></i>
+            </div>
+            <strong>@Model.DespesasFormatado</strong>
+            <small>@Model.QuantidadeDespesas lançamento(s) · anterior: @Model.DespesasMesAnteriorFormatado</small>
+        </article>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <article class="report-kpi report-kpi-saldo h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <span>Resultado do período</span><i class="bi bi-wallet2"></i>
+            </div>
+            <strong>@Model.SaldoFormatado</strong>
+            <small>Receitas menos despesas do período</small>
+        </article>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <article class="report-kpi report-kpi-arquivos h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <span>Arquivos analisados</span><i class="bi bi-file-earmark-check"></i>
+            </div>
+            <strong>@Model.TotalDocumentos</strong>
+            <small>Documento(s) processado(s) neste mês</small>
+        </article>
+    </div>
+</section>
+
+<section class="row g-4 mb-4">
+    <div class="col-12 col-xl-7">
+        <div class="card-app h-100 mb-0">
+            <div class="card-app-header">
+                <div>
+                    <h2 class="card-app-title"><i class="bi bi-bar-chart-line text-primary"></i> Evolução mensal</h2>
+                    <p class="small text-muted mb-0 mt-1">Comparativo dos últimos seis meses até @Model.PeriodoNome.</p>
+                </div>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">6 meses</span>
+            </div>
+            <div class="card-app-body">
+                @if (Model.EvolucaoMensal.Any(item => item.Receitas > 0 || item.Despesas > 0))
+                {
+                    foreach (var item in Model.EvolucaoMensal)
+                    {
+                        <div class="report-month-row">
+                            <div class="report-month-label">
+                                <strong>@cultura.TextInfo.ToTitleCase(item.Nome)</strong>
+                                <small>@item.Ano</small>
+                            </div>
+                            <div class="report-month-bars">
+                                <div class="report-bar-line" title="Receitas: @item.ReceitasFormatado">
+                                    <i class="bi bi-arrow-down-left text-success"></i>
+                                    <div class="report-bar-track"><span class="report-bar-fill report-bar-receita" style="width: @item.PercentualReceitas%;"></span></div>
+                                    <small>@item.ReceitasFormatado</small>
+                                </div>
+                                <div class="report-bar-line" title="Despesas: @item.DespesasFormatado">
+                                    <i class="bi bi-arrow-up-right text-danger"></i>
+                                    <div class="report-bar-track"><span class="report-bar-fill report-bar-despesa" style="width: @item.PercentualDespesas%;"></span></div>
+                                    <small>@item.DespesasFormatado</small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <div class="report-legend mt-3">
+                        <span><i class="report-legend-dot report-bar-receita"></i> Receitas</span>
+                        <span><i class="report-legend-dot report-bar-despesa"></i> Despesas</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="report-empty-state">
+                        <i class="bi bi-bar-chart-line"></i>
+                        <p>Nenhuma movimentação encontrada neste intervalo.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-5">
+        <div class="card-app h-100 mb-0">
+            <div class="card-app-header">
+                <div>
+                    <h2 class="card-app-title"><i class="bi bi-pie-chart text-danger"></i> Despesas por categoria</h2>
+                    <p class="small text-muted mb-0 mt-1">Participação no total de despesas do mês.</p>
+                </div>
+            </div>
+            <div class="card-app-body">
+                @if (Model.DespesasPorCategoria.Any())
+                {
+                    foreach (var categoria in Model.DespesasPorCategoria)
+                    {
+                        <div class="report-category-row">
+                            <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                                <span class="fw-semibold small text-dark">@categoria.Nome</span>
+                                <span class="small text-muted">@categoria.Percentual%</span>
+                            </div>
+                            <div class="report-bar-track report-category-track">
+                                <span class="report-bar-fill report-bar-despesa" style="width: @categoria.Percentual%;"></span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between mt-1">
+                                <small class="text-muted">@categoria.Quantidade lançamento(s)</small>
+                                <small class="fw-semibold">@categoria.ValorFormatado</small>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="report-empty-state report-empty-compact">
+                        <i class="bi bi-receipt"></i>
+                        <p>Sem despesas registradas no período.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-4 mb-4">
+    <div class="col-12 col-lg-5">
+        <div class="card-app h-100 mb-0">
+            <div class="card-app-header">
+                <div>
+                    <h2 class="card-app-title"><i class="bi bi-pie-chart text-success"></i> Receitas por categoria</h2>
+                    <p class="small text-muted mb-0 mt-1">Origem dos valores recebidos no período.</p>
+                </div>
+            </div>
+            <div class="card-app-body">
+                @if (Model.ReceitasPorCategoria.Any())
+                {
+                    foreach (var categoria in Model.ReceitasPorCategoria)
+                    {
+                        <div class="report-category-row">
+                            <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                                <span class="fw-semibold small text-dark">@categoria.Nome</span>
+                                <span class="small text-muted">@categoria.Percentual%</span>
+                            </div>
+                            <div class="report-bar-track report-category-track">
+                                <span class="report-bar-fill report-bar-receita" style="width: @categoria.Percentual%;"></span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between mt-1">
+                                <small class="text-muted">@categoria.Quantidade lançamento(s)</small>
+                                <small class="fw-semibold">@categoria.ValorFormatado</small>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="report-empty-state report-empty-compact">
+                        <i class="bi bi-cash-coin"></i>
+                        <p>Sem receitas registradas no período.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-7">
+        <div class="card-app h-100 mb-0">
+            <div class="card-app-header">
+                <div>
+                    <h2 class="card-app-title"><i class="bi bi-lightbulb text-warning"></i> Como ler este relatório</h2>
+                    <p class="small text-muted mb-0 mt-1">Regras usadas nos indicadores.</p>
+                </div>
+            </div>
+            <div class="card-app-body">
+                <div class="report-insight-row">
+                    <span class="report-insight-icon"><i class="bi bi-calendar-check"></i></span>
+                    <div><strong>Período fechado pelo calendário</strong><p>O relatório usa a data do lançamento e considera do primeiro ao último dia do mês selecionado.</p></div>
+                </div>
+                <div class="report-insight-row">
+                    <span class="report-insight-icon"><i class="bi bi-check2-circle"></i></span>
+                    <div><strong>Somente lançamentos concluídos</strong><p>Itens pendentes ou cancelados não entram nos totais e gráficos.</p></div>
+                </div>
+                <div class="report-insight-row mb-0">
+                    <span class="report-insight-icon"><i class="bi bi-file-earmark-spreadsheet"></i></span>
+                    <div><strong>Planilha pronta para Excel</strong><p>A exportação contém os lançamentos do período em CSV compatível com planilhas.</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card-app">
+    <div class="card-app-header">
+        <div>
+            <h2 class="card-app-title"><i class="bi bi-list-ul text-primary"></i> Lançamentos do período</h2>
+            <p class="small text-muted mb-0 mt-1">Exibindo até 20 lançamentos concluídos mais recentes.</p>
+        </div>
+        <span class="badge bg-light text-dark border">@Model.TotalLancamentos no total</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table-app">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Origem</th>
+                    <th>Tipo</th>
+                    <th class="text-end">Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.LancamentosRecentes.Any())
+                {
+                    foreach (var lancamento in Model.LancamentosRecentes)
+                    {
+                        <tr>
+                            <td class="text-muted small">@lancamento.DataFormatada</td>
+                            <td class="fw-semibold">@lancamento.Descricao</td>
+                            <td>@(string.IsNullOrWhiteSpace(lancamento.CategoriaNome) ? "Sem categoria" : lancamento.CategoriaNome)</td>
+                            <td class="text-muted small">@(lancamento.CriadoPorIA ? lancamento.NomeArquivoOrigem : "Manual")</td>
+                            <td><span class="@(lancamento.Tipo == OrcamentoPessoal.Models.TipoTransacao.Receita ? "badge-finance-receita" : "badge-finance-despesa")">@lancamento.Tipo</span></td>
+                            <td class="text-end fw-bold @(lancamento.Tipo == OrcamentoPessoal.Models.TipoTransacao.Receita ? "text-success" : "text-danger")">@lancamento.ValorFormatado</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6" class="text-center py-5 text-muted">Nenhum lançamento concluído com data neste período.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
