@@ -22,16 +22,16 @@
                     O principal gargalo no controle financeiro pessoal e de pequenos negócios é o retrabalho manual: baixar extratos bancários, faturas de múltiplos cartões e recibos avulsos, e ter que digitar linha por linha em uma planilha.
                 </p>
                 <p class="text-secondary leading-relaxed">
-                    A solução propõe integrar módulos de <strong>Inteligência Artificial (LLMs e OCR)</strong> para interpretar documentos desestruturados em formatos como <strong>PDF, planilhas Excel (.xlsx), arquivos CSV e fotos de recibos</strong>, convertendo-os automaticamente em planilhas padronizadas e gráficos de acompanhamento.
+                    Atualmente, a aplicação analisa <strong>extratos e faturas em PDF, planilhas Excel (.xlsx) e arquivos CSV</strong>, sugere lançamentos e categorias fixas e permite revisar, editar ou excluir os itens. Os lançamentos e metadados dos documentos são persistidos no MariaDB; o arquivo original não é armazenado. O texto extraído é enviado ao serviço Python e à API Groq para análise.
                 </p>
 
                 <hr class="my-4" />
 
                 <h5 class="fw-bold text-dark mb-3">Próximos Passos de Desenvolvimento</h5>
                 <ul class="list-unstyled d-flex flex-column gap-2 text-secondary">
-                    <li><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Fase 1 (Concluída):</strong> Padronização do Design System (site.css), menu lateral responsivo e autenticação persistida em MariaDB.</li>
-                    <li><i class="bi bi-clock-history text-primary me-2"></i><strong>Fase 2 (Em Planejamento):</strong> Persistência dos dados financeiros em banco de dados relacional.</li>
-                    <li><i class="bi bi-stars text-info me-2"></i><strong>Fase 3 (Futura):</strong> Integração com APIs de Inteligência Artificial para parsing de PDFs, leitura de extratos OFX/PDF e consolidação automática de relatórios financeiros.</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Fundação (Concluída):</strong> Interface responsiva, login persistido e acesso ao MariaDB.</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Importação (Concluída):</strong> Análise de PDF, CSV e XLSX, persistência de metadados e lançamentos e revisão manual dos itens importados.</li>
+                    <li><i class="bi bi-clock-history text-primary me-2"></i><strong>Próximas etapas:</strong> Categorias personalizáveis, definição de orçamentos e relatórios financeiros.</li>
                 </ul>
             </div>
 
@@ -43,8 +43,9 @@
                         <li><strong>Linguagem:</strong> C#</li>
                         <li><strong>Frontend:</strong> HTML5 Semântico, CSS3 Moderno, Bootstrap 5.2.3</li>
                         <li><strong>Ícones:</strong> Bootstrap Icons</li>
-                        <li><strong>Mock:</strong> Camada de simulação em memória (HomeDB)</li>
-                        <li><strong>IA Alvo:</strong> Extração de documentos financeiros (OCR & LLMs)</li>
+                        <li><strong>Serviço de arquivos:</strong> Python com FastAPI</li>
+                        <li><strong>Banco de Dados:</strong> MariaDB (usuários, documentos e lançamentos)</li>
+                        <li><strong>Análise inteligente:</strong> API Groq</li>
                     </ul>
                 </div>
             </div>

@@ -15,8 +15,51 @@
                 </p>
             </div>
             <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Entendido</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="modalInfoCancelar" data-bs-dismiss="modal" hidden>Cancelar</button>
+                <button type="button" class="btn btn-primary btn-sm" id="modalInfoConfirmar" hidden>Confirmar</button>
+                <button type="button" class="btn btn-primary btn-sm" id="modalInfoEntendido" data-bs-dismiss="modal">Entendido</button>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    (function () {
+        'use strict';
+
+        var modalElement = document.getElementById('modalInfo');
+        var tituloElement = document.getElementById('modalInfoTitulo');
+        var mensagemElement = document.getElementById('modalInfoMensagem');
+        var entendidoButton = document.getElementById('modalInfoEntendido');
+        var cancelarButton = document.getElementById('modalInfoCancelar');
+        var confirmarButton = document.getElementById('modalInfoConfirmar');
+        var acaoConfirmada = null;
+
+        window.mostrarInfoModal = function (titulo, mensagem) {
+            tituloElement.textContent = titulo || 'Informação do Sistema';
+            mensagemElement.textContent = mensagem || '';
+            entendidoButton.hidden = false;
+            cancelarButton.hidden = true;
+            confirmarButton.hidden = true;
+            acaoConfirmada = null;
+            bootstrap.Modal.getOrCreateInstance(modalElement).show();
+        };
+
+        window.mostrarConfirmacaoModal = function (titulo, mensagem, aoConfirmar) {
+            tituloElement.textContent = titulo || 'Confirmação';
+            mensagemElement.textContent = mensagem || '';
+            entendidoButton.hidden = true;
+            cancelarButton.hidden = false;
+            confirmarButton.hidden = false;
+            acaoConfirmada = aoConfirmar;
+            bootstrap.Modal.getOrCreateInstance(modalElement).show();
+        };
+
+        confirmarButton.addEventListener('click', function () {
+            var executarAcao = acaoConfirmada;
+            acaoConfirmada = null;
+            bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+            if (executarAcao) executarAcao();
+        });
+    })();
+</script>

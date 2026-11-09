@@ -51,6 +51,15 @@
     <Reference Include="MySql.Data">
       <HintPath>..\packages\MySql.Data.8.0.33\lib\net462\MySql.Data.dll</HintPath>
     </Reference>
+    <Reference Include="System.Buffers">
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -125,19 +134,26 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Database\ConexaoBD.cs" />
+    <Compile Include="Database\DocumentoDB.cs" />
     <Compile Include="Database\HomeDB.cs" />
+    <Compile Include="Database\TransacaoDB.cs" />
     <Compile Include="Database\UsuarioDB.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Categoria.cs" />
+    <Compile Include="Models\AnaliseArquivoViewModel.cs" />
+    <Compile Include="Models\CatalogoCategorias.cs" />
     <Compile Include="Models\DashboardViewModel.cs" />
     <Compile Include="Models\DocumentoFinanceiro.cs" />
     <Compile Include="Models\Transacao.cs" />
+    <Compile Include="Models\TransacaoSugeridaViewModel.cs" />
+    <Compile Include="Models\RevisaoTransacoesViewModel.cs" />
     <Compile Include="Models\UsuarioAutenticacao.cs" />
     <Compile Include="Models\UserLogin.cs" />
     <Compile Include="Models\Usuario.cs" />
     <Compile Include="Security\PasswordHasher.cs" />
+    <Compile Include="Services\ServicoAnaliseArquivos.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -179,6 +195,8 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="SQL Versoes\1.0.0.0.sql" />
+    <Content Include="SQL Versoes\1.1.0.0.sql" />
+    <Content Include="SQL Versoes\1.2.0.0.sql" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -193,6 +211,7 @@
     <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Home\Login.cshtml" />
+    <Content Include="Views\Home\Transacoes.cshtml" />
     <Content Include="Views\Shared\_ErrorModal.cshtml" />
     <Content Include="Views\Shared\_InfoModal.cshtml" />
   </ItemGroup>

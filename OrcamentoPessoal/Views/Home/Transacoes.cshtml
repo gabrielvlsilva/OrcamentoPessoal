@@ -1,0 +1,137 @@
+﻿@model OrcamentoPessoal.Models.RevisaoTransacoesViewModel
+@using System.Globalization
+@using System.Linq
+@{
+    ViewBag.Title = "Revisar Transações";
+    ViewBag.PageTitle = "Revisar lançamentos importados";
+}
+
+<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+        <h2 class="h3 fw-bold mb-1 text-dark">Revisar lançamentos importados</h2>
+        <p class="text-muted mb-0 small">Corrija os dados identificados pela análise ou remova lançamentos incorretos.</p>
+    </div>
+    <a href="@Url.Action("Index", "Home")" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Voltar ao painel
+    </a>
+</div>
+
+@if (ViewBag.TransacaoErro != null)
+{
+    <div class="alert alert-danger" role="alert">@ViewBag.TransacaoErro</div>
+}
+
+@if (ViewBag.TransacaoSucesso != null)
+{
+    <div class="alert alert-success" role="status">@ViewBag.TransacaoSucesso</div>
+}
+
+<div class="alert alert-info small" role="status">
+    O tipo, a origem e o status do lançamento são preservados. Informe o valor usando vírgula para os centavos.
+</div>
+
+@if (Model.Transacoes != null && Model.Transacoes.Any())
+{
+    foreach (var transacao in Model.Transacoes)
+    {
+        <div class="card-app mb-3">
+            <div class="card-app-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div>
+                    <span class="@(transacao.Tipo == OrcamentoPessoal.Models.TipoTransacao.Receita ? "badge-finance-receita" : "badge-finance-despesa")">@transacao.Tipo</span>
+                    <span class="text-muted small ms-2">Lançamento #@transacao.Id</span>
+                </div>
+                <span class="text-muted small">
+                    @if (!string.IsNullOrWhiteSpace(transacao.NomeArquivoOrigem))
+                    {
+                        <span><i class="bi bi-file-earmark-text me-1"></i>@transacao.NomeArquivoOrigem</span>
+                    }
+                    @if (transacao.PaginaOrigem.HasValue)
+                    {
+                        <span class="ms-2">Página @transacao.PaginaOrigem</span>
+                    }
+                    @if (transacao.LinhaOrigem.HasValue)
+                    {
+                        <span class="ms-2">Linha @transacao.LinhaOrigem</span>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(transacao.PlanilhaOrigem))
+                    {
+                        <span class="ms-2">Planilha: @transacao.PlanilhaOrigem</span>
+                    }
+                </span>
+            </div>
+            <div class="card-app-body">
+                @using (Html.BeginForm("AtualizarTransacaoImportada", "Home", FormMethod.Post, new { @class = "mb-3" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.Hidden("Id", transacao.Id)
+                    <div class="row g-3">
+                        <div class="col-12 col-lg-5">
+                            <label for="descricao_@transacao.Id" class="form-label small fw-semibold">Descrição</label>
+                            @Html.TextBox("Descricao", transacao.Descricao, new { id = "descricao_" + transacao.Id, @class = "form-control", maxlength = "150", required = "required" })
+                        </div>
+                        <div class="col-6 col-lg-2">
+                            <label for="valor_@transacao.Id" class="form-label small fw-semibold">Valor</label>
+                            @Html.TextBox("Valor", transacao.Valor.ToString("N2", CultureInfo.GetCultureInfo("pt-BR")), new { id = "valor_" + transacao.Id, @class = "form-control", inputmode = "decimal", required = "required" })
+                        </div>
+                        <div class="col-6 col-lg-2">
+                            <label for="data_@transacao.Id" class="form-label small fw-semibold">Data</label>
+                            @Html.TextBox("DataTransacao", transacao.DataTransacao.HasValue ? transacao.DataTransacao.Value.ToString("yyyy-MM-dd") : string.Empty, new { id = "data_" + transacao.Id, type = "date", @class = "form-control" })
+                        </div>
+                        <div class="col-12 col-lg-3">
+                            <label for="categoria_@transacao.Id" class="form-label small fw-semibold">Categoria</label>
+                            @Html.DropDownList("CategoriaCodigo", new SelectList(Model.Categorias.Where(item => item.Tipo == transacao.Tipo.ToString()), "Codigo", "Nome", transacao.CategoriaCodigo), new { id = "categoria_" + transacao.Id, @class = "form-select" })
+                        </div>
+                        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <small class="text-muted">Confiança estimada da análise: @((transacao.ConfiancaIA * 100).ToString("0"))%</small>
+                            <button type="submit" class="btn btn-sm btn-app-primary">
+                                <i class="bi bi-check2 me-1"></i> Salvar alterações
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                @using (Html.BeginForm("ExcluirTransacaoImportada", "Home", FormMethod.Post, new { @class = "js-excluir-transacao" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.Hidden("id", transacao.Id)
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash me-1"></i> Excluir lançamento
+                    </button>
+                }
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="card-app">
+        <div class="card-app-body text-center py-5">
+            <i class="bi bi-check2-circle fs-1 text-muted"></i>
+            <p class="text-muted mt-3 mb-0">Não há lançamentos importados para revisar.</p>
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script>
+        (function () {
+            'use strict';
+
+            var formulariosExclusao = document.querySelectorAll('.js-excluir-transacao');
+
+            formulariosExclusao.forEach(function (formulario) {
+                formulario.addEventListener('submit', function (evento) {
+                    evento.preventDefault();
+
+                    window.mostrarConfirmacaoModal(
+                        'Excluir lançamento',
+                        'Deseja excluir este lançamento?',
+                        function () {
+                            formulario.submit();
+                        }
+                    );
+                });
+            });
+        })();
+    </script>
+}

@@ -1,260 +1,245 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using OrcamentoPessoal.Models;
 
 namespace OrcamentoPessoal.Database
 {
     public class HomeDB
     {
-        public static DashboardViewModel ObterDadosDashboard(Usuario usuario = null)
+        public static DashboardViewModel ObterDadosDashboard(Usuario usuario, out string errorMsg)
         {
-            var user = usuario ?? new Usuario
+            errorMsg = string.Empty;
+            var dashboard = new DashboardViewModel
             {
-                Nome = "Usuário",
-                Perfil = "Usuário"
+                Usuario = usuario ?? new Usuario()
             };
 
-            var vm = new DashboardViewModel
+            if (usuario == null || usuario.Id == 0)
             {
-                Usuario = user,
-                SaldoAtual = 8450.20m,
-                TotalReceitasMes = 12800.00m,
-                TotalDespesasMes = 4349.80m,
-                EconomiaPrevistaMes = 8450.20m,
-                TotalDocumentosProcessados = 6,
-                TotalTransacoesExtraidasIA = 42,
-                UltimasTransacoes = ObterTransacoesMock(),
-                DocumentosRecentes = ObterDocumentosMock(),
-                CategoriasResumo = ObterCategoriasMock()
+                errorMsg = "Não foi possível identificar o usuário atual.";
+                return dashboard;
+            }
+
+            DateTime hoje = DateTime.Today;
+            DateTime inicioMes = new DateTime(hoje.Year, hoje.Month, 1);
+            DateTime inicioProximoMes = inicioMes.AddMonths(1);
+            dashboard.MesAtualNome = hoje.ToString("MMMM yyyy", new CultureInfo("pt-BR"));
+            dashboard.AnoAtual = hoje.Year;
+
+            var parametros = new Dictionary<string, object>
+            {
+                { "UsuarioId", usuario.Id }
             };
 
-            return vm;
-        }
+            const string sqlResumo = @"
+                SELECT
+                    COALESCE(SUM(CASE WHEN TRN_TIP = 1 THEN TRN_VAL WHEN TRN_TIP = 2 THEN -TRN_VAL ELSE 0 END), 0) AS SaldoAtual,
+                    COALESCE(SUM(CASE WHEN TRN_TIP = 1 AND TRN_DTA >= @InicioMes AND TRN_DTA < @InicioProximoMes THEN TRN_VAL ELSE 0 END), 0) AS TotalReceitasMes,
+                    COALESCE(SUM(CASE WHEN TRN_TIP = 2 AND TRN_DTA >= @InicioMes AND TRN_DTA < @InicioProximoMes THEN TRN_VAL ELSE 0 END), 0) AS TotalDespesasMes
+                FROM trn
+                WHERE USR_AIC = @UsuarioId
+                    AND TRN_STA = @StatusConcluido";
 
-        public static List<Transacao> ObterTransacoesMock()
-        {
-            return new List<Transacao>
+            var resumo = ConexaoBD.ConsultaObjeto<ResumoDashboardBD>(sqlResumo, new Dictionary<string, object>
             {
-                new Transacao
+                { "UsuarioId", usuario.Id },
+                { "StatusConcluido", (int)StatusTransacao.Concluido },
+                { "InicioMes", inicioMes },
+                { "InicioProximoMes", inicioProximoMes }
+            }, out errorMsg);
+
+            if (!string.IsNullOrEmpty(errorMsg))
+            {
+                return dashboard;
+            }
+
+            if (resumo != null)
+            {
+                dashboard.SaldoAtual = resumo.SaldoAtual ?? 0;
+                dashboard.TotalReceitasMes = resumo.TotalReceitasMes ?? 0;
+                dashboard.TotalDespesasMes = resumo.TotalDespesasMes ?? 0;
+            }
+
+            const string sqlCategorias = @"
+                SELECT
+                    TRN_CAT AS Codigo,
+                    SUM(TRN_VAL) AS TotalGastoMes
+                FROM trn
+                WHERE USR_AIC = @UsuarioId
+                    AND TRN_STA = @StatusConcluido
+                    AND TRN_TIP = @TipoDespesa
+                    AND TRN_DTA >= @InicioMes
+                    AND TRN_DTA < @InicioProximoMes
+                GROUP BY TRN_CAT
+                ORDER BY TotalGastoMes DESC";
+
+            var gastosPorCategoria = ConexaoBD.Consulta<CategoriaResumoBD>(sqlCategorias, new Dictionary<string, object>
+            {
+                { "UsuarioId", usuario.Id },
+                { "StatusConcluido", (int)StatusTransacao.Concluido },
+                { "TipoDespesa", (int)TipoTransacao.Despesa },
+                { "InicioMes", inicioMes },
+                { "InicioProximoMes", inicioProximoMes }
+            }, out errorMsg);
+
+            if (!string.IsNullOrEmpty(errorMsg))
+            {
+                return dashboard;
+            }
+
+            var catalogoCategorias = CatalogoCategorias.ObterCategorias();
+            foreach (var gasto in gastosPorCategoria)
+            {
+                var categoriaFixa = catalogoCategorias.FirstOrDefault(item => item.Codigo == gasto.Codigo);
+                dashboard.CategoriasResumo.Add(new Categoria
                 {
-                    Id = 1,
-                    Descricao = "Salário Mensal - Empresa Tech",
-                    Valor = 9500.00m,
-                    DataTransacao = DateTime.Today.AddDays(-2),
-                    Tipo = TipoTransacao.Receita,
-                    CategoriaNome = "Remuneração",
-                    CategoriaIcone = "bi-cash-coin",
-                    CategoriaCor = "#10b981",
-                    FormaPagamento = "TED / Pix",
-                    Status = StatusTransacao.Concluido,
-                    Observacao = "Depósito mensal em conta corrente"
-                },
-                new Transacao
-                {
-                    Id = 2,
-                    Descricao = "Supermercado Pão de Açúcar",
-                    Valor = 684.50m,
-                    DataTransacao = DateTime.Today.AddDays(-3),
+                    Nome = categoriaFixa == null ? "Sem categoria" : categoriaFixa.Nome,
                     Tipo = TipoTransacao.Despesa,
-                    CategoriaNome = "Alimentação",
-                    CategoriaIcone = "bi-cart3",
-                    CategoriaCor = "#f59e0b",
-                    FormaPagamento = "Cartão de Crédito",
-                    Status = StatusTransacao.Concluido,
-                    DocumentoOrigemId = 101,
-                    NomeArquivoOrigem = "Fatura_Nubank_Mar2025.pdf",
-                    Observacao = "Itens identificados automaticamente por IA"
-                },
-                new Transacao
+                    TotalGastoMes = gasto.TotalGastoMes,
+                    PercentualNoTotalDespesas = dashboard.TotalDespesasMes > 0
+                        ? (int)Math.Round(gasto.TotalGastoMes / dashboard.TotalDespesasMes * 100)
+                        : 0
+                });
+            }
+
+            const string sqlTransacoes = @"
+                SELECT
+                    t.TRN_AIC AS Id,
+                    t.TRN_DES AS Descricao,
+                    t.TRN_VAL AS Valor,
+                    t.TRN_DTA AS DataTransacao,
+                    t.TRN_TIP AS Tipo,
+                    t.TRN_CAT AS CategoriaCodigo,
+                    t.TRN_FPG AS FormaPagamento,
+                    t.TRN_STA AS Status,
+                    t.TRN_CNF AS ConfiancaIA,
+                    t.TRN_PAG AS PaginaOrigem,
+                    t.TRN_PLA AS PlanilhaOrigem,
+                    t.TRN_LIN AS LinhaOrigem,
+                    t.DOC_AIC AS DocumentoOrigemId,
+                    COALESCE(d.DOC_NOM, '') AS NomeArquivoOrigem
+                FROM trn t
+                LEFT JOIN doc d ON d.DOC_AIC = t.DOC_AIC
+                WHERE t.USR_AIC = @UsuarioId
+                    AND t.TRN_STA = @StatusConcluido
+                ORDER BY COALESCE(t.TRN_DTA, DATE(t.TRN_DTC)) DESC, t.TRN_AIC DESC
+                LIMIT 10";
+
+            dashboard.UltimasTransacoes = ConexaoBD.Consulta<Transacao>(sqlTransacoes, new Dictionary<string, object>
+            {
+                { "UsuarioId", usuario.Id },
+                { "StatusConcluido", (int)StatusTransacao.Concluido }
+            }, out errorMsg);
+
+            if (!string.IsNullOrEmpty(errorMsg))
+            {
+                return dashboard;
+            }
+
+            foreach (var transacao in dashboard.UltimasTransacoes)
+            {
+                var categoria = CatalogoCategorias.ObterCategorias().FirstOrDefault(item => item.Codigo == transacao.CategoriaCodigo);
+                if (categoria != null)
                 {
-                    Id = 3,
-                    Descricao = "Aluguel & Condomínio",
-                    Valor = 1950.00m,
-                    DataTransacao = DateTime.Today.AddDays(-5),
-                    Tipo = TipoTransacao.Despesa,
-                    CategoriaNome = "Moradia",
-                    CategoriaIcone = "bi-house-door",
-                    CategoriaCor = "#6366f1",
-                    FormaPagamento = "Boleto Bancário",
-                    Status = StatusTransacao.Concluido,
-                    Observacao = "Pagamento pontual com desconto"
-                },
-                new Transacao
-                {
-                    Id = 4,
-                    Descricao = "Projeto Freelance - Dashboard Web",
-                    Valor = 3300.00m,
-                    DataTransacao = DateTime.Today.AddDays(-7),
-                    Tipo = TipoTransacao.Receita,
-                    CategoriaNome = "Freelance",
-                    CategoriaIcone = "bi-laptop",
-                    CategoriaCor = "#10b981",
-                    FormaPagamento = "Pix",
-                    Status = StatusTransacao.Concluido,
-                    Observacao = "Entrega módulo de relatórios"
-                },
-                new Transacao
-                {
-                    Id = 5,
-                    Descricao = "Posto Ipiranga - Combustível",
-                    Valor = 220.00m,
-                    DataTransacao = DateTime.Today.AddDays(-8),
-                    Tipo = TipoTransacao.Despesa,
-                    CategoriaNome = "Transporte",
-                    CategoriaIcone = "bi-fuel-pump",
-                    CategoriaCor = "#06b6d4",
-                    FormaPagamento = "Cartão de Débito",
-                    Status = StatusTransacao.Concluido,
-                    DocumentoOrigemId = 102,
-                    NomeArquivoOrigem = "Extrato_Itau_Fev2025.pdf",
-                    Observacao = "Lançamento conciliado via IA"
-                },
-                new Transacao
-                {
-                    Id = 6,
-                    Descricao = "Assinatura OpenAI & Plataformas Cloud",
-                    Valor = 195.30m,
-                    DataTransacao = DateTime.Today.AddDays(-10),
-                    Tipo = TipoTransacao.Despesa,
-                    CategoriaNome = "Tecnologia",
-                    CategoriaIcone = "bi-robot",
-                    CategoriaCor = "#8b5cf6",
-                    FormaPagamento = "Cartão de Crédito",
-                    Status = StatusTransacao.Concluido,
-                    DocumentoOrigemId = 101,
-                    NomeArquivoOrigem = "Fatura_Nubank_Mar2025.pdf",
-                    Observacao = "Cobrança internacional convertida"
+                    transacao.CategoriaNome = categoria.Nome;
                 }
-            };
+            }
+
+            const string sqlEstatisticas = @"
+                SELECT
+                    COUNT(DISTINCT CASE WHEN d.DOC_STA IN ('Importado', 'Analisado') THEN d.DOC_AIC END) AS TotalDocumentosProcessados,
+                    COUNT(t.TRN_AIC) AS TotalTransacoesExtraidasIA
+                FROM doc d
+                LEFT JOIN trn t ON t.DOC_AIC = d.DOC_AIC
+                WHERE d.USR_AIC = @UsuarioId";
+
+            var estatisticas = ConexaoBD.ConsultaObjeto<EstatisticasDashboardBD>(sqlEstatisticas, parametros, out errorMsg);
+            if (!string.IsNullOrEmpty(errorMsg))
+            {
+                return dashboard;
+            }
+
+            if (estatisticas != null)
+            {
+                dashboard.TotalDocumentosProcessados = estatisticas.TotalDocumentosProcessados;
+                dashboard.TotalTransacoesExtraidasIA = estatisticas.TotalTransacoesExtraidasIA;
+            }
+
+            const string sqlDocumentos = @"
+                SELECT
+                    d.DOC_AIC AS Id,
+                    d.DOC_NOM AS NomeArquivo,
+                    d.DOC_EXT AS Extensao,
+                    d.DOC_TAM AS TamanhoBytes,
+                    d.DOC_DTU AS DataUpload,
+                    CASE d.DOC_EXT
+                        WHEN '.xlsx' THEN 1
+                        WHEN '.csv' THEN 2
+                        ELSE 0
+                    END AS Formato,
+                    CASE
+                        WHEN d.DOC_STA IN ('Importado', 'Analisado') THEN 3
+                        WHEN d.DOC_STA LIKE 'Falha%' THEN 4
+                        WHEN d.DOC_STA = 'Recebido' THEN 1
+                        ELSE 2
+                    END AS Status,
+                    COUNT(t.TRN_AIC) AS QtdTransacoesExtraidas,
+                    COALESCE(SUM(t.TRN_VAL), 0) AS ValorTotalDetectado,
+                    COALESCE(ROUND(AVG(t.TRN_CNF) * 100), 0) AS ConfiancaIA,
+                    CASE
+                        WHEN COUNT(t.TRN_AIC) = 0 THEN 'Nenhum lançamento identificado'
+                        ELSE CONCAT(COUNT(t.TRN_AIC), ' lançamentos importados')
+                    END AS ResumoIA
+                FROM doc d
+                LEFT JOIN trn t ON t.DOC_AIC = d.DOC_AIC
+                WHERE d.USR_AIC = @UsuarioId
+                GROUP BY d.DOC_AIC, d.DOC_NOM, d.DOC_EXT, d.DOC_TAM, d.DOC_DTU, d.DOC_STA
+                ORDER BY d.DOC_DTU DESC
+                LIMIT 5";
+
+            dashboard.DocumentosRecentes = ConexaoBD.Consulta<DocumentoFinanceiro>(sqlDocumentos, parametros, out errorMsg);
+            if (!string.IsNullOrEmpty(errorMsg))
+            {
+                return dashboard;
+            }
+
+            foreach (var documento in dashboard.DocumentosRecentes)
+            {
+                documento.TamanhoFormatado = FormatarTamanho(documento.TamanhoBytes);
+            }
+
+            return dashboard;
         }
 
-        public static List<DocumentoFinanceiro> ObterDocumentosMock()
+        private static string FormatarTamanho(long tamanhoBytes)
         {
-            return new List<DocumentoFinanceiro>
+            if (tamanhoBytes >= 1024 * 1024)
             {
-                new DocumentoFinanceiro
-                {
-                    Id = 101,
-                    NomeArquivo = "Fatura_Nubank_Mar2025.pdf",
-                    Formato = FormatoArquivo.PDF,
-                    Extensao = ".pdf",
-                    TamanhoBytes = 245760,
-                    TamanhoFormatado = "240 KB",
-                    DataUpload = DateTime.Today.AddDays(-1),
-                    Status = StatusProcessamentoIA.Concluido,
-                    QtdTransacoesExtraidas = 18,
-                    ValorTotalDetectado = 1354.20m,
-                    ConfiancaIA = 97,
-                    ResumoIA = "18 lançamentos extraídos, 0 duplicidades, categorização com 97% de certeza."
-                },
-                new DocumentoFinanceiro
-                {
-                    Id = 102,
-                    NomeArquivo = "Extrato_Itau_Fev2025.pdf",
-                    Formato = FormatoArquivo.PDF,
-                    Extensao = ".pdf",
-                    TamanhoBytes = 512000,
-                    TamanhoFormatado = "500 KB",
-                    DataUpload = DateTime.Today.AddDays(-4),
-                    Status = StatusProcessamentoIA.Concluido,
-                    QtdTransacoesExtraidas = 24,
-                    ValorTotalDetectado = 8920.00m,
-                    ConfiancaIA = 99,
-                    ResumoIA = "Extrato bancário consolidado. Saldo inicial e final validados perfeitamente."
-                },
-                new DocumentoFinanceiro
-                {
-                    Id = 103,
-                    NomeArquivo = "Planilha_Controle_Anual.xlsx",
-                    Formato = FormatoArquivo.Excel,
-                    Extensao = ".xlsx",
-                    TamanhoBytes = 114688,
-                    TamanhoFormatado = "112 KB",
-                    DataUpload = DateTime.Today.AddDays(-7),
-                    Status = StatusProcessamentoIA.Concluido,
-                    QtdTransacoesExtraidas = 48,
-                    ValorTotalDetectado = 22150.00m,
-                    ConfiancaIA = 95,
-                    ResumoIA = "Planilha convertida em formato unificado para emissão de relatórios."
-                },
-                new DocumentoFinanceiro
-                {
-                    Id = 104,
-                    NomeArquivo = "Comprovantes_Digitalizados_Mar2025.pdf",
-                    Formato = FormatoArquivo.PDF,
-                    Extensao = ".pdf",
-                    TamanhoBytes = 3200000,
-                    TamanhoFormatado = "3.1 MB",
-                    DataUpload = DateTime.Now.AddMinutes(-30),
-                    Status = StatusProcessamentoIA.EmProcessamento,
-                    QtdTransacoesExtraidas = 0,
-                    ValorTotalDetectado = 0m,
-                    ConfiancaIA = 92,
-                    ResumoIA = "Módulo OCR em execução: identificando notas fiscais e cupons escaneados..."
-                }
-            };
-        }
+                return (tamanhoBytes / (1024d * 1024d)).ToString("0.0", CultureInfo.InvariantCulture) + " MB";
+            }
 
-        public static List<Categoria> ObterCategoriasMock()
-        {
-            return new List<Categoria>
-            {
-                new Categoria
-                {
-                    Id = 1,
-                    Nome = "Moradia & Contas Fixas",
-                    Tipo = TipoTransacao.Despesa,
-                    CorHex = "#6366f1",
-                    IconeCss = "bi-house-door",
-                    OrcamentoMensal = 2500.00m,
-                    TotalGastoMes = 1950.00m,
-                    Descricao = "Aluguel, condomínio, luz, água e internet"
-                },
-                new Categoria
-                {
-                    Id = 2,
-                    Nome = "Alimentação & Mercado",
-                    Tipo = TipoTransacao.Despesa,
-                    CorHex = "#f59e0b",
-                    IconeCss = "bi-cart3",
-                    OrcamentoMensal = 1200.00m,
-                    TotalGastoMes = 684.50m,
-                    Descricao = "Supermercado, feiras e delivery"
-                },
-                new Categoria
-                {
-                    Id = 3,
-                    Nome = "Transporte & Mobilidade",
-                    Tipo = TipoTransacao.Despesa,
-                    CorHex = "#06b6d4",
-                    IconeCss = "bi-fuel-pump",
-                    OrcamentoMensal = 600.00m,
-                    TotalGastoMes = 220.00m,
-                    Descricao = "Combustível, transporte por aplicativo e estacionamento"
-                },
-                new Categoria
-                {
-                    Id = 4,
-                    Nome = "Educação & Tecnologia",
-                    Tipo = TipoTransacao.Despesa,
-                    CorHex = "#8b5cf6",
-                    IconeCss = "bi-laptop",
-                    OrcamentoMensal = 500.00m,
-                    TotalGastoMes = 195.30m,
-                    Descricao = "Ferramentas de IA, cursos e faculdade"
-                },
-                new Categoria
-                {
-                    Id = 5,
-                    Nome = "Lazer & Bem-estar",
-                    Tipo = TipoTransacao.Despesa,
-                    CorHex = "#ec4899",
-                    IconeCss = "bi-controller",
-                    OrcamentoMensal = 800.00m,
-                    TotalGastoMes = 300.00m,
-                    Descricao = "Passeios, streaming e restaurantes"
-                }
-            };
+            return Math.Max(1, (int)Math.Ceiling(tamanhoBytes / 1024d)) + " KB";
         }
+    }
+
+    public class ResumoDashboardBD
+    {
+        public decimal? SaldoAtual { get; set; }
+        public decimal? TotalReceitasMes { get; set; }
+        public decimal? TotalDespesasMes { get; set; }
+    }
+
+    public class EstatisticasDashboardBD
+    {
+        public int TotalDocumentosProcessados { get; set; }
+        public int TotalTransacoesExtraidasIA { get; set; }
+    }
+
+    public class CategoriaResumoBD
+    {
+        public string Codigo { get; set; }
+        public decimal TotalGastoMes { get; set; }
     }
 }

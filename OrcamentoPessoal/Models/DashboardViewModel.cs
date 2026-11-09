@@ -19,7 +19,6 @@ namespace OrcamentoPessoal.Models
         public List<Transacao> UltimasTransacoes { get; set; } = new List<Transacao>();
         public List<DocumentoFinanceiro> DocumentosRecentes { get; set; } = new List<DocumentoFinanceiro>();
         public List<Categoria> CategoriasResumo { get; set; } = new List<Categoria>();
-
         public string MesAtualNome { get; set; } = DateTime.Now.ToString("MMMM yyyy", new CultureInfo("pt-BR"));
         public int AnoAtual { get; set; } = DateTime.Now.Year;
 

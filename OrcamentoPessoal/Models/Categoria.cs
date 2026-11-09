@@ -29,6 +29,8 @@ namespace OrcamentoPessoal.Models
         [Display(Name = "Total Gasto no Mês")]
         public decimal TotalGastoMes { get; set; }
 
+        public int PercentualNoTotalDespesas { get; set; }
+
         [Display(Name = "Descrição")]
         public string Descricao { get; set; } = string.Empty;
 

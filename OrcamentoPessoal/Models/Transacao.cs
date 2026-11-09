@@ -42,7 +42,7 @@ namespace OrcamentoPessoal.Models
         [Required(ErrorMessage = "Informe a data")]
         [DataType(DataType.Date)]
         [Display(Name = "Data da Transação")]
-        public DateTime DataTransacao { get; set; } = DateTime.Today;
+        public DateTime? DataTransacao { get; set; } = DateTime.Today;
 
         [DataType(DataType.Date)]
         [Display(Name = "Data de Vencimento")]
@@ -53,6 +53,8 @@ namespace OrcamentoPessoal.Models
 
         [Display(Name = "Categoria")]
         public string CategoriaNome { get; set; } = "Geral";
+
+        public string CategoriaCodigo { get; set; } = string.Empty;
 
         public string CategoriaIcone { get; set; } = "bi-tag";
 
@@ -72,9 +74,17 @@ namespace OrcamentoPessoal.Models
         [Display(Name = "Arquivo de Origem")]
         public string NomeArquivoOrigem { get; set; } = string.Empty;
 
+        public decimal ConfiancaIA { get; set; }
+
+        public int? PaginaOrigem { get; set; }
+
+        public string PlanilhaOrigem { get; set; } = string.Empty;
+
+        public int? LinhaOrigem { get; set; }
+
         public bool CriadoPorIA => DocumentoOrigemId.HasValue;
 
         public string ValorFormatado => Valor.ToString("C", new CultureInfo("pt-BR"));
-        public string DataFormatada => DataTransacao.ToString("dd/MM/yyyy");
+        public string DataFormatada => DataTransacao.HasValue ? DataTransacao.Value.ToString("dd/MM/yyyy") : "—";
     }
 }

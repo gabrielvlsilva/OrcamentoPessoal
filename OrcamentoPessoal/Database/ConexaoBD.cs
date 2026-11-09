@@ -122,6 +122,64 @@ namespace OrcamentoPessoal.Database
             }
         }
 
+        public static void ExecutarComandosEmTransacao(IList<ComandoSqlBD> comandos, out string errorMsg)
+        {
+            errorMsg = string.Empty;
+
+            if (comandos == null || comandos.Count == 0)
+            {
+                errorMsg = "Nenhum comando foi informado para a transação.";
+                return;
+            }
+
+            foreach (var item in comandos)
+            {
+                if (item == null || string.IsNullOrWhiteSpace(item.Sql))
+                {
+                    errorMsg = "A transação contém um comando SQL inválido.";
+                    return;
+                }
+            }
+
+            DbConnection conexao;
+            if (!AbrirConexao(out conexao, out errorMsg))
+            {
+                return;
+            }
+
+            using (conexao)
+            using (var transacao = conexao.BeginTransaction())
+            {
+                try
+                {
+                    foreach (var item in comandos)
+                    {
+                        using (var comando = conexao.CreateCommand())
+                        {
+                            comando.Transaction = transacao;
+                            comando.CommandText = item.Sql;
+                            AdicionarParametros(comando, item.Parametros);
+                            comando.ExecuteNonQuery();
+                        }
+                    }
+
+                    transacao.Commit();
+                }
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        transacao.Rollback();
+                    }
+                    catch (Exception)
+                    {
+                    }
+
+                    errorMsg = "Não foi possível concluir a transação no banco de dados: " + ex.Message;
+                }
+            }
+        }
+
         private static Dictionary<string, PropertyInfo> ObterPropriedadesMapeaveis<T>()
         {
             var propriedades = new Dictionary<string, PropertyInfo>(StringComparer.OrdinalIgnoreCase);
@@ -282,5 +340,11 @@ namespace OrcamentoPessoal.Database
                 return false;
             }
         }
+    }
+
+    public class ComandoSqlBD
+    {
+        public string Sql { get; set; }
+        public IDictionary<string, object> Parametros { get; set; }
     }
 }
