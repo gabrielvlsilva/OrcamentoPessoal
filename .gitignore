@@ -361,4 +361,48 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Configuracoes locais e segredos
+.env
+.env.*
+!.env.example
+*.local.config
+*.secrets
+*.secrets.*
+
+# Dados locais e arquivos de teste enviados
+OrcamentoPessoal/App_Data/**
+**/uploads/
+**/uploads/**
+*.sqlite
+*.sqlite3
+*.db
+
+# Ambientes e artefatos Python
+**/.venv/
+**/venv/
+**/__pycache__/
+*.py[cod]
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.tox/
+**/.nox/
+**/*.egg-info/
+servico_arquivos/build/
+servico_arquivos/dist/
+.coverage
+htmlcov/
+
+# Logs e arquivos temporarios locais
+*.log
+*.pid
+*.bak
+*.tmp
+
+# Arquivos locais do sistema operacional e IDEs
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
 /docs/AUTENTICACAO.md
