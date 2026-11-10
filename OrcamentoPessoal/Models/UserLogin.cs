@@ -15,10 +15,6 @@ namespace OrcamentoPessoal.Models
         [DataType(DataType.Password)]
         [Display(Name = "Senha")]
         public string Senha { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Retorna apenas os dígitos do CPF, removendo pontuações
-        /// </summary>
         public string ObterCpfLimpo()
         {
             if (string.IsNullOrWhiteSpace(Usuario))

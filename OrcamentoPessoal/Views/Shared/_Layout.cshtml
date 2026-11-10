@@ -1,8 +1,8 @@
 ﻿@using OrcamentoPessoal.Models
 @{
     var usuarioLogado = Session["UsuarioLogado"] as Usuario;
-    var nomeUsuario = usuarioLogado != null ? usuarioLogado.Nome : "Usuário";
-    var primeiroNome = usuarioLogado != null ? usuarioLogado.PrimeiroNome : "Usuário";
+    var nomeUsuario = usuarioLogado != null ? usuarioLogado.Nome : "Conta";
+    var primeiroNome = usuarioLogado != null ? usuarioLogado.PrimeiroNome : "Conta";
     var iniciaisUsuario = usuarioLogado != null ? usuarioLogado.Iniciais : "US";
     var perfilUsuario = usuarioLogado != null ? usuarioLogado.Perfil : "Usuário";
     string currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "Index";
@@ -15,15 +15,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@(ViewBag.Title ?? "Dashboard") - Orçamento Pessoal & IA</title>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap Icons CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- Estilos do Sistema -->
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
 
@@ -31,12 +28,9 @@
 </head>
 <body>
     <div class="app-wrapper">
-        <!-- Backdrop para dispositivos móveis -->
         <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
-        <!-- Menu Lateral Responsivo (Sidebar) -->
         <aside class="app-sidebar" id="appSidebar" aria-label="Menu Principal de Navegação">
-            <!-- Brand / Logo -->
             <div class="sidebar-brand">
                 <a href="@Url.Action("Index", "Home")" class="brand-link">
                     <div class="brand-logo-icon">
@@ -44,7 +38,6 @@
                     </div>
                     <div>
                         <h1 class="brand-title">Orçamento</h1>
-                        <span class="brand-badge"><i class="bi bi-stars"></i> IA Financeira</span>
                     </div>
                 </a>
                 <button type="button" class="sidebar-close-btn" id="btnSidebarClose" aria-label="Fechar menu">
@@ -52,7 +45,6 @@
                 </button>
             </div>
 
-            <!-- Navegação -->
             <div class="sidebar-nav">
                 <div class="nav-section-title">Menu Principal</div>
                 <ul class="sidebar-menu">
@@ -72,7 +64,6 @@
                         <a href="@(Url.Action("Index", "Home"))#formImportarArquivo" class="sidebar-link">
                             <i class="bi bi-robot"></i>
                             <span>Importar arquivo</span>
-                            <span class="badge-ai-nav">Beta</span>
                         </a>
                     </li>
                     <li class="sidebar-item">
@@ -101,7 +92,6 @@
                 </ul>
             </div>
 
-            <!-- Perfil do Usuário e Logout -->
             <div class="sidebar-user">
                 <div class="user-profile-preview">
                     <div class="user-avatar-circle" title="@nomeUsuario">
@@ -122,12 +112,10 @@
             </div>
         </aside>
 
-        <!-- Área Principal de Conteúdo -->
         <div class="app-main">
-            <!-- Barra Superior (Topbar) -->
             <header class="app-topbar">
                 <div class="topbar-left">
-                    <button type="button" class="btn-toggle-sidebar" id="sidebarToggle" aria-label="Alternar menu lateral">
+                    <button type="button" class="btn-toggle-sidebar" id="sidebarToggle" aria-label="Alternar menu lateral" aria-controls="appSidebar" aria-expanded="true">
                         <i class="bi bi-list"></i>
                     </button>
                     <div class="topbar-breadcrumb">
@@ -179,12 +167,10 @@
                 </div>
             </header>
 
-            <!-- Conteúdo Injetado pela View -->
             <main class="app-content" role="main">
                 @RenderBody()
             </main>
 
-            <!-- Rodapé -->
             <footer class="app-footer">
                 <div>
                     <strong>Orçamento Pessoal & IA Financeira</strong> &copy; @DateTime.Now.Year - Projeto Acadêmico & Inovação.
@@ -198,73 +184,75 @@
 
     @Html.Partial("_InfoModal")
 
-    <!-- Scripts Base -->
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
 
-    <!-- Controle do Menu Lateral Responsivo -->
     <script>
-                (function () {
-                    'use strict';
+        (function () {
+            'use strict';
 
-                    var sidebar = document.getElementById('appSidebar');
-                    var backdrop = document.getElementById('sidebarBackdrop');
-                    var toggleBtn = document.getElementById('sidebarToggle');
-                    var closeBtn = document.getElementById('btnSidebarClose');
+            var wrapper = document.querySelector('.app-wrapper');
+            var sidebar = document.getElementById('appSidebar');
+            var backdrop = document.getElementById('sidebarBackdrop');
+            var toggleBtn = document.getElementById('sidebarToggle');
+            var closeBtn = document.getElementById('btnSidebarClose');
+            var mobileBreakpoint = window.matchMedia('(max-width: 991.98px)');
 
-                    function openSidebar() {
-                        if (sidebar) sidebar.classList.add('show');
-                        if (backdrop) backdrop.classList.add('show');
-                        document.body.style.overflow = 'hidden';
-                    }
+            function setSidebarOpen(isOpen) {
+                if (!sidebar || !wrapper) return;
 
-                    function closeSidebar() {
-                        if (sidebar) sidebar.classList.remove('show');
-                        if (backdrop) backdrop.classList.remove('show');
-                        document.body.style.overflow = '';
-                    }
+                if (mobileBreakpoint.matches) {
+                    sidebar.classList.toggle('show', isOpen);
+                    if (backdrop) backdrop.classList.toggle('show', isOpen);
+                    document.body.style.overflow = isOpen ? 'hidden' : '';
+                } else {
+                    wrapper.classList.toggle('sidebar-collapsed', !isOpen);
+                    sidebar.classList.remove('show');
+                    if (backdrop) backdrop.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
 
-                    if (toggleBtn) {
-                        toggleBtn.addEventListener('click', function (e) {
-                            e.preventDefault();
-                            if (sidebar && sidebar.classList.contains('show')) {
-                                closeSidebar();
-                            } else {
-                                openSidebar();
-                            }
-                            if (toggleBtn) {
-                        toggleBtn.addEventListener('click', function (e) {
-                            e.preventDefault();
-                            if (sidebar && sidebar.classList.contains('show')) {
-                                closeSidebar();
-                            } else {
-                                openSidebar();
-                            }
-                        });
-                    }
-                        });
-                    }
+                if (toggleBtn) toggleBtn.setAttribute('aria-expanded', isOpen.toString());
+            }
 
-                    if (closeBtn) {
-                        closeBtn.addEventListener('click', function (e) {
-                            e.preventDefault();
-                            closeSidebar();
-                        });
-                    }
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function () {
+                    var isOpen = mobileBreakpoint.matches
+                        ? sidebar && sidebar.classList.contains('show')
+                        : !wrapper.classList.contains('sidebar-collapsed');
 
-                    if (backdrop) {
-                        backdrop.addEventListener('click', function () {
-                            closeSidebar();
-                        });
-                    }
+                    setSidebarOpen(!isOpen);
+                });
+            }
 
-                    // Fechar no ESC
-                    document.addEventListener('keydown', function (e) {
-                        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('show')) {
-                            closeSidebar();
-                        }
-                    });
-                })();
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function () {
+                    setSidebarOpen(false);
+                });
+            }
+
+            if (backdrop) {
+                backdrop.addEventListener('click', function () {
+                    setSidebarOpen(false);
+                });
+            }
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') setSidebarOpen(false);
+            });
+
+            function handleBreakpointChange(event) {
+                setSidebarOpen(!event.matches);
+            }
+
+            if (mobileBreakpoint.addEventListener) {
+                mobileBreakpoint.addEventListener('change', handleBreakpointChange);
+            } else {
+                mobileBreakpoint.addListener(handleBreakpointChange);
+            }
+
+            setSidebarOpen(!mobileBreakpoint.matches);
+        })();
     </script>
 
     @RenderSection("scripts", required: false)

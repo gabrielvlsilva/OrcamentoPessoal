@@ -67,8 +67,6 @@ namespace OrcamentoPessoal.Models
 
         [Display(Name = "Observação")]
         public string Observacao { get; set; } = string.Empty;
-
-        // Propriedades de rastreabilidade de IA
         public int? DocumentoOrigemId { get; set; }
 
         [Display(Name = "Arquivo de Origem")]

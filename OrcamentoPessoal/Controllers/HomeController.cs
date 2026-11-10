@@ -28,8 +28,6 @@ namespace OrcamentoPessoal.Controllers
 
             base.OnActionExecuting(filterContext);
         }
-
-        // GET: / ou /Home/Index (Dashboard principal com menu lateral responsivo)
         public ActionResult Index()
         {
             var usuario = Session["UsuarioLogado"] as Usuario;
@@ -43,8 +41,6 @@ namespace OrcamentoPessoal.Controllers
         {
             return View();
         }
-
-        // POST: /Home/ImportarArquivo
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ImportarArquivo(HttpPostedFileBase arquivo)
@@ -198,17 +194,12 @@ namespace OrcamentoPessoal.Controllers
                 Array.Clear(conteudoArquivo, 0, conteudoArquivo.Length);
             }
         }
-
-        // GET: /Home/Inicio (Compatibilidade com redirecionamentos anteriores)
         public ActionResult Inicio()
         {
             return RedirectToAction("Index");
         }
-
-        // GET: /Home/Login
         public ActionResult Login()
         {
-            // Se já estiver logado, pode redirecionar para a home
             if (Session["UsuarioLogado"] != null)
             {
                 return RedirectToAction("Index");
@@ -216,8 +207,6 @@ namespace OrcamentoPessoal.Controllers
 
             return View(new UserLogin());
         }
-
-        // POST: /Home/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Login(UserLogin login)
@@ -239,8 +228,6 @@ namespace OrcamentoPessoal.Controllers
 
             return RedirectToAction("Index");
         }
-
-        // POST: /Home/Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Logout()
@@ -249,8 +236,6 @@ namespace OrcamentoPessoal.Controllers
             Session.Abandon();
             return RedirectToAction("Login");
         }
-
-        // Seções auxiliares do menu lateral (preparadas para os próximos desenvolvimentos do aluno)
         public ActionResult Transacoes()
         {
             ViewBag.ActiveMenu = "Transacoes";
@@ -330,17 +315,29 @@ namespace OrcamentoPessoal.Controllers
 
             var usuario = Session["UsuarioLogado"] as Usuario;
             DateTime hoje = DateTime.Today;
-            int mes = hoje.Month;
-            int ano = hoje.Year;
             bool periodoInformado = Request.QueryString["mes"] != null || Request.QueryString["ano"] != null;
+            DateTime periodoPadrao = new DateTime(hoje.Year, hoje.Month, 1);
+            string erroPeriodoPadrao = string.Empty;
+
+            if (!periodoInformado)
+            {
+                DateTime? ultimoPeriodo = RelatorioDB.ObterUltimoPeriodo(usuario.Id, out erroPeriodoPadrao);
+                if (ultimoPeriodo.HasValue)
+                {
+                    periodoPadrao = ultimoPeriodo.Value;
+                }
+            }
+
+            int mes = periodoPadrao.Month;
+            int ano = periodoPadrao.Year;
             bool periodoValido = !periodoInformado ||
                 (int.TryParse(Request.QueryString["mes"], out mes) && int.TryParse(Request.QueryString["ano"], out ano)
                     && mes >= 1 && mes <= 12 && ano >= 2000 && ano <= 2100);
 
             if (!periodoValido)
             {
-                mes = hoje.Month;
-                ano = hoje.Year;
+                mes = periodoPadrao.Month;
+                ano = periodoPadrao.Year;
             }
 
             string errorMsg;
@@ -349,9 +346,13 @@ namespace OrcamentoPessoal.Controllers
             {
                 relatorio.Erro = "Não foi possível carregar os dados do relatório. Confira a conexão com o banco de dados.";
             }
+            else if (!string.IsNullOrEmpty(erroPeriodoPadrao))
+            {
+                relatorio.Erro = "Não foi possível identificar o último período com lançamentos. Exibindo o mês atual.";
+            }
             else if (!periodoValido)
             {
-                relatorio.Erro = "O período informado é inválido. Exibindo o mês atual.";
+                relatorio.Erro = "O período informado é inválido. Exibindo o último período com lançamentos.";
             }
 
             return View(relatorio);

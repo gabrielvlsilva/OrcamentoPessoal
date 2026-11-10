@@ -1,37 +1,21 @@
-/* ==========================================================================
-   ORÇAMENTO PESSOAL & IA FINANCEIRA - DESIGN SYSTEM & IDENTIDADE VISUAL
-   ========================================================================== */
-
-/* --------------------------------------------------------------------------
-   1. Variáveis Globais & Paleta de Cores
-   -------------------------------------------------------------------------- */
 :root {
-    /* Cores Primárias (Identidade Fintech & Confiança) */
     --primary-color: #2563eb;
     --primary-hover: #1d4ed8;
     --primary-light: #eff6ff;
     --primary-border: #bfdbfe;
-
-    /* Acentos & IA (Gradiente Tecnológico Roxo-Ciano) */
     --ai-purple: #6366f1;
     --ai-cyan: #06b6d4;
     --ai-gradient: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
     --ai-glow: rgba(99, 102, 241, 0.25);
-
-    /* Cores Semânticas Financeiras */
     --color-receita: #10b981;
     --color-receita-bg: #ecfdf5;
     --color-receita-border: #a7f3d0;
-
     --color-despesa: #ef4444;
     --color-despesa-bg: #fef2f2;
     --color-despesa-border: #fecaca;
-
     --color-alerta: #f59e0b;
     --color-alerta-bg: #fffbeb;
     --color-alerta-border: #fde68a;
-
-    /* Escala Neutra de Slate */
     --slate-950: #020617;
     --slate-900: #0f172a;
     --slate-800: #1e293b;
@@ -44,30 +28,21 @@
     --slate-100: #f1f5f9;
     --slate-50: #f8fafc;
     --surface-white: #ffffff;
-
-    /* Layout & Dimensões */
     --sidebar-width: 270px;
     --topbar-height: 68px;
     --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 16px;
     --radius-xl: 22px;
-
-    /* Sombras Elegantes */
     --shadow-subtle: 0 1px 3px rgba(15, 23, 42, 0.05);
     --shadow-card: 0 4px 14px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
     --shadow-elevated: 0 12px 28px rgba(15, 23, 42, 0.1), 0 4px 10px rgba(15, 23, 42, 0.04);
     --shadow-glow-ai: 0 0 20px rgba(99, 102, 241, 0.35);
-
-    /* Tipografia */
     --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', Consolas, "Courier New", monospace;
 }
 
-/* --------------------------------------------------------------------------
-   2. Reset & Estilos Base
-   -------------------------------------------------------------------------- */
 *, *::before, *::after {
     box-sizing: border-box;
 }
@@ -103,38 +78,35 @@ a {
     transition: color 0.2s ease;
 }
 
-a:hover {
-    color: var(--primary-hover);
-}
+    a:hover {
+        color: var(--primary-hover);
+    }
 
-/* --------------------------------------------------------------------------
-   3. Estrutura do Layout Principal (Menu Lateral Responsivo + Conteúdo)
-   -------------------------------------------------------------------------- */
 .app-wrapper {
-    display: flex;
+    display: block;
     min-height: 100vh;
     width: 100%;
     position: relative;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
-/* Menu Lateral (Sidebar) */
 .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
     background: linear-gradient(180deg, var(--slate-950) 0%, var(--slate-900) 100%);
     color: var(--slate-300);
     display: flex;
     flex-direction: column;
-    position: sticky;
-    top: 0;
     height: 100vh;
+    height: 100dvh;
     z-index: 1040;
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s ease;
 }
 
-/* Brand / Cabeçalho do Menu */
 .sidebar-brand {
     padding: 1.5rem 1.25rem;
     display: flex;
@@ -197,12 +169,11 @@ a:hover {
     border-radius: var(--radius-sm);
 }
 
-.sidebar-close-btn:hover {
-    color: var(--surface-white);
-    background: rgba(255, 255, 255, 0.08);
-}
+    .sidebar-close-btn:hover {
+        color: var(--surface-white);
+        background: rgba(255, 255, 255, 0.08);
+    }
 
-/* Navegação da Sidebar */
 .sidebar-nav {
     flex: 1;
     padding: 1.25rem 0.85rem;
@@ -210,13 +181,14 @@ a:hover {
     overflow-x: hidden;
 }
 
-.sidebar-nav::-webkit-scrollbar {
-    width: 4px;
-}
-.sidebar-nav::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-}
+    .sidebar-nav::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .sidebar-nav::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+    }
 
 .nav-section-title {
     font-size: 0.7rem;
@@ -254,43 +226,32 @@ a:hover {
     position: relative;
 }
 
-.sidebar-link i {
-    font-size: 1.15rem;
-    color: var(--slate-400);
-    transition: color 0.2s ease;
-}
+    .sidebar-link i {
+        font-size: 1.15rem;
+        color: var(--slate-400);
+        transition: color 0.2s ease;
+    }
 
-.sidebar-link:hover {
-    color: var(--surface-white);
-    background: rgba(255, 255, 255, 0.08);
-}
+    .sidebar-link:hover {
+        color: var(--surface-white);
+        background: rgba(255, 255, 255, 0.08);
+    }
 
-.sidebar-link:hover i {
-    color: #93c5fd;
-}
+        .sidebar-link:hover i {
+            color: #93c5fd;
+        }
 
-.sidebar-link.active {
-    color: var(--surface-white);
-    background: linear-gradient(90deg, rgba(37, 99, 235, 0.35) 0%, rgba(37, 99, 235, 0.15) 100%);
-    border-left: 3px solid var(--primary-color);
-    font-weight: 600;
-}
+    .sidebar-link.active {
+        color: var(--surface-white);
+        background: linear-gradient(90deg, rgba(37, 99, 235, 0.35) 0%, rgba(37, 99, 235, 0.15) 100%);
+        border-left: 3px solid var(--primary-color);
+        font-weight: 600;
+    }
 
-.sidebar-link.active i {
-    color: #60a5fa;
-}
+        .sidebar-link.active i {
+            color: #60a5fa;
+        }
 
-.sidebar-link .badge-ai-nav {
-    margin-left: auto;
-    font-size: 0.65rem;
-    padding: 0.15rem 0.5rem;
-    background: var(--ai-gradient);
-    color: white;
-    border-radius: 999px;
-    font-weight: 600;
-}
-
-/* Rodapé da Sidebar (Usuário Logado) */
 .sidebar-user {
     padding: 1rem 1.1rem;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -360,12 +321,11 @@ a:hover {
     transition: all 0.2s ease;
 }
 
-.btn-sidebar-logout:hover {
-    color: var(--color-despesa);
-    background: rgba(239, 68, 68, 0.12);
-}
+    .btn-sidebar-logout:hover {
+        color: var(--color-despesa);
+        background: rgba(239, 68, 68, 0.12);
+    }
 
-/* Cortina Escura para Mobile (Backdrop) */
 .sidebar-backdrop {
     display: none;
     position: fixed;
@@ -380,16 +340,26 @@ a:hover {
     transition: opacity 0.3s ease;
 }
 
-/* Área Principal */
 .app-main {
-    flex: 1;
+    width: calc(100% - var(--sidebar-width));
+    margin-left: var(--sidebar-width);
     display: flex;
     flex-direction: column;
     min-width: 0;
     background-color: var(--slate-50);
 }
 
-/* Barra Superior (Topbar) */
+@media (min-width: 992px) {
+    .app-wrapper.sidebar-collapsed .app-sidebar {
+        transform: translateX(-100%);
+    }
+
+    .app-wrapper.sidebar-collapsed .app-main {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
 .app-topbar {
     height: var(--topbar-height);
     background: rgba(255, 255, 255, 0.92);
@@ -424,10 +394,10 @@ a:hover {
     transition: all 0.2s ease;
 }
 
-.btn-toggle-sidebar:hover {
-    background: var(--slate-200);
-    color: var(--slate-900);
-}
+    .btn-toggle-sidebar:hover {
+        background: var(--slate-200);
+        color: var(--slate-900);
+    }
 
 .topbar-breadcrumb {
     display: flex;
@@ -447,7 +417,6 @@ a:hover {
     gap: 0.85rem;
 }
 
-/* Conteúdo Principal */
 .app-content {
     flex: 1;
     padding: 2rem 2.25rem;
@@ -456,7 +425,6 @@ a:hover {
     margin: 0 auto;
 }
 
-/* Rodapé Geral da Aplicação */
 .app-footer {
     padding: 1.25rem 2.25rem;
     background: var(--surface-white);
@@ -470,9 +438,6 @@ a:hover {
     gap: 0.75rem;
 }
 
-/* --------------------------------------------------------------------------
-   4. Componentes Financeiros & Cards (Identidade Visual)
-   -------------------------------------------------------------------------- */
 .stat-card {
     background: var(--surface-white);
     border-radius: var(--radius-lg);
@@ -484,10 +449,10 @@ a:hover {
     overflow: hidden;
 }
 
-.stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-elevated);
-}
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-elevated);
+    }
 
 .stat-card-header {
     display: flex;
@@ -515,26 +480,26 @@ a:hover {
     font-size: 1.35rem;
 }
 
-.stat-icon.saldo {
-    background: var(--primary-light);
-    color: var(--primary-color);
-}
+    .stat-icon.saldo {
+        background: var(--primary-light);
+        color: var(--primary-color);
+    }
 
-.stat-icon.receita {
-    background: var(--color-receita-bg);
-    color: var(--color-receita);
-}
+    .stat-icon.receita {
+        background: var(--color-receita-bg);
+        color: var(--color-receita);
+    }
 
-.stat-icon.despesa {
-    background: var(--color-despesa-bg);
-    color: var(--color-despesa);
-}
+    .stat-icon.despesa {
+        background: var(--color-despesa-bg);
+        color: var(--color-despesa);
+    }
 
-.stat-icon.ia {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
-    color: var(--ai-purple);
-    border: 1px solid rgba(99, 102, 241, 0.25);
-}
+    .stat-icon.ia {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
+        color: var(--ai-purple);
+        border: 1px solid rgba(99, 102, 241, 0.25);
+    }
 
 .stat-value {
     font-size: 1.75rem;
@@ -545,13 +510,13 @@ a:hover {
     margin-bottom: 0.4rem;
 }
 
-.stat-value.receita {
-    color: var(--color-receita);
-}
+    .stat-value.receita {
+        color: var(--color-receita);
+    }
 
-.stat-value.despesa {
-    color: var(--color-despesa);
-}
+    .stat-value.despesa {
+        color: var(--color-despesa);
+    }
 
 .stat-footer {
     display: flex;
@@ -561,7 +526,6 @@ a:hover {
     color: var(--slate-500);
 }
 
-/* Card Padrão da Aplicação */
 .card-app {
     background: var(--surface-white);
     border-radius: var(--radius-lg);
@@ -593,37 +557,6 @@ a:hover {
     padding: 1.5rem;
 }
 
-/* Banners e Destaques de IA */
-.ai-banner-card {
-    background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
-    border-radius: var(--radius-lg);
-    color: white;
-    padding: 1.75rem;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    box-shadow: var(--shadow-glow-ai);
-    margin-bottom: 1.75rem;
-}
-
-.ai-banner-card::after {
-    content: "";
-    position: absolute;
-    top: -50px;
-    right: -50px;
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.ai-gradient-text {
-    background: var(--ai-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 700;
-}
-
 .badge-ai {
     display: inline-flex;
     align-items: center;
@@ -637,9 +570,6 @@ a:hover {
     font-weight: 600;
 }
 
-/* --------------------------------------------------------------------------
-   5. Tabelas Financeiras & Itens
-   -------------------------------------------------------------------------- */
 .table-app {
     width: 100%;
     margin-bottom: 0;
@@ -647,29 +577,29 @@ a:hover {
     border-spacing: 0;
 }
 
-.table-app th {
-    background-color: var(--slate-50);
-    color: var(--slate-600);
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.85rem 1rem;
-    border-bottom: 1px solid var(--slate-200);
-    white-space: nowrap;
-}
+    .table-app th {
+        background-color: var(--slate-50);
+        color: var(--slate-600);
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--slate-200);
+        white-space: nowrap;
+    }
 
-.table-app td {
-    padding: 1rem;
-    vertical-align: middle;
-    border-bottom: 1px solid var(--slate-100);
-    color: var(--slate-800);
-    font-size: 0.9rem;
-}
+    .table-app td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--slate-100);
+        color: var(--slate-800);
+        font-size: 0.9rem;
+    }
 
-.table-app tr:hover td {
-    background-color: #f8fafc;
-}
+    .table-app tr:hover td {
+        background-color: #f8fafc;
+    }
 
 .badge-finance-receita {
     background-color: var(--color-receita-bg);
@@ -691,9 +621,6 @@ a:hover {
     font-size: 0.75rem;
 }
 
-/* --------------------------------------------------------------------------
-   6. Botões e Formulários
-   -------------------------------------------------------------------------- */
 .btn-app-primary {
     background: var(--primary-color);
     color: var(--surface-white);
@@ -710,13 +637,13 @@ a:hover {
     box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
 }
 
-.btn-app-primary:hover {
-    background: var(--primary-hover);
-    border-color: var(--primary-hover);
-    color: var(--surface-white);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
-}
+    .btn-app-primary:hover {
+        background: var(--primary-hover);
+        border-color: var(--primary-hover);
+        color: var(--surface-white);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+    }
 
 .btn-app-outline {
     background: transparent;
@@ -733,11 +660,11 @@ a:hover {
     transition: all 0.2s ease;
 }
 
-.btn-app-outline:hover {
-    background: var(--slate-100);
-    color: var(--slate-900);
-    border-color: var(--slate-400);
-}
+    .btn-app-outline:hover {
+        background: var(--slate-100);
+        color: var(--slate-900);
+        border-color: var(--slate-400);
+    }
 
 .btn-app-ai {
     background: var(--ai-gradient);
@@ -755,11 +682,11 @@ a:hover {
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
 }
 
-.btn-app-ai:hover {
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
-}
+    .btn-app-ai:hover {
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
+    }
 
 .form-label {
     font-weight: 600;
@@ -777,21 +704,17 @@ a:hover {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    outline: none;
-}
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        outline: none;
+    }
 
-/* --------------------------------------------------------------------------
-   7. Tela de Login (Identidade Visual Moderna & Responsiva)
-   -------------------------------------------------------------------------- */
 .login-page-body {
     min-height: 100vh;
     margin: 0;
     padding: 0;
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(30, 58, 138, 0.85)),
-                url('/Content/images/bg-login.jpg') center center/cover no-repeat fixed;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(30, 58, 138, 0.85)), url('/Content/images/bg-login.jpg') center center/cover no-repeat fixed;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -809,7 +732,6 @@ a:hover {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Coluna Visual/Apresentação (Esquerda) */
 .login-hero-side {
     flex: 1;
     background: linear-gradient(145deg, #0f172a 0%, #1e1b4b 50%, #1e293b 100%);
@@ -822,25 +744,25 @@ a:hover {
     overflow: hidden;
 }
 
-.login-hero-side::before {
-    content: "";
-    position: absolute;
-    top: -80px;
-    left: -80px;
-    width: 250px;
-    height: 250px;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, transparent 70%);
-}
+    .login-hero-side::before {
+        content: "";
+        position: absolute;
+        top: -80px;
+        left: -80px;
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, transparent 70%);
+    }
 
-.login-hero-side::after {
-    content: "";
-    position: absolute;
-    bottom: -60px;
-    right: -60px;
-    width: 220px;
-    height: 220px;
-    background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%);
-}
+    .login-hero-side::after {
+        content: "";
+        position: absolute;
+        bottom: -60px;
+        right: -60px;
+        width: 220px;
+        height: 220px;
+        background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%);
+    }
 
 .login-hero-header {
     position: relative;
@@ -917,9 +839,6 @@ a:hover {
     color: var(--slate-400);
 }
 
-/* --------------------------------------------------------------------------
-   9. Relatórios Financeiros
-   -------------------------------------------------------------------------- */
 .relatorios-hero {
     display: flex;
     align-items: center;
@@ -935,17 +854,17 @@ a:hover {
     position: relative;
 }
 
-.relatorios-hero::after {
-    content: "";
-    position: absolute;
-    width: 240px;
-    height: 240px;
-    top: -125px;
-    right: 15%;
-    border-radius: 50%;
-    background: rgba(6, 182, 212, 0.15);
-    filter: blur(2px);
-}
+    .relatorios-hero::after {
+        content: "";
+        position: absolute;
+        width: 240px;
+        height: 240px;
+        top: -125px;
+        right: 15%;
+        border-radius: 50%;
+        background: rgba(6, 182, 212, 0.15);
+        filter: blur(2px);
+    }
 
 .relatorios-hero-content,
 .relatorios-periodo-resumo {
@@ -973,22 +892,22 @@ a:hover {
     gap: 0.2rem;
 }
 
-.relatorios-periodo-resumo span {
-    color: #a5b4fc;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-}
+    .relatorios-periodo-resumo span {
+        color: #a5b4fc;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+    }
 
-.relatorios-periodo-resumo strong {
-    font-family: var(--font-heading);
-    font-size: 1.2rem;
-    text-transform: capitalize;
-}
+    .relatorios-periodo-resumo strong {
+        font-family: var(--font-heading);
+        font-size: 1.2rem;
+        text-transform: capitalize;
+    }
 
-.relatorios-periodo-resumo small {
-    color: rgba(255, 255, 255, 0.65);
-}
+    .relatorios-periodo-resumo small {
+        color: rgba(255, 255, 255, 0.65);
+    }
 
 .relatorios-aviso {
     padding: 0.85rem 1rem;
@@ -1008,40 +927,63 @@ a:hover {
     box-shadow: var(--shadow-card);
 }
 
-.report-kpi > div span {
-    color: var(--slate-500);
-    font-size: 0.76rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    .report-kpi > div span {
+        color: var(--slate-500);
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .report-kpi > div i {
+        font-size: 1.25rem;
+    }
+
+    .report-kpi strong {
+        display: block;
+        margin-bottom: 0.25rem;
+        color: var(--slate-900);
+        font-family: var(--font-heading);
+        font-size: 1.45rem;
+    }
+
+    .report-kpi small {
+        display: block;
+        color: var(--slate-500);
+        font-size: 0.72rem;
+    }
+
+.report-kpi-receita {
+    border-left-color: var(--color-receita);
 }
 
-.report-kpi > div i {
-    font-size: 1.25rem;
+    .report-kpi-receita > div i {
+        color: var(--color-receita);
+    }
+
+.report-kpi-despesa {
+    border-left-color: var(--color-despesa);
 }
 
-.report-kpi strong {
-    display: block;
-    margin-bottom: 0.25rem;
-    color: var(--slate-900);
-    font-family: var(--font-heading);
-    font-size: 1.45rem;
+    .report-kpi-despesa > div i {
+        color: var(--color-despesa);
+    }
+
+.report-kpi-saldo {
+    border-left-color: var(--primary-color);
 }
 
-.report-kpi small {
-    display: block;
-    color: var(--slate-500);
-    font-size: 0.72rem;
+    .report-kpi-saldo > div i {
+        color: var(--primary-color);
+    }
+
+.report-kpi-arquivos {
+    border-left-color: var(--ai-purple);
 }
 
-.report-kpi-receita { border-left-color: var(--color-receita); }
-.report-kpi-receita > div i { color: var(--color-receita); }
-.report-kpi-despesa { border-left-color: var(--color-despesa); }
-.report-kpi-despesa > div i { color: var(--color-despesa); }
-.report-kpi-saldo { border-left-color: var(--primary-color); }
-.report-kpi-saldo > div i { color: var(--primary-color); }
-.report-kpi-arquivos { border-left-color: var(--ai-purple); }
-.report-kpi-arquivos > div i { color: var(--ai-purple); }
+    .report-kpi-arquivos > div i {
+        color: var(--ai-purple);
+    }
 
 .report-month-row {
     display: grid;
@@ -1051,7 +993,9 @@ a:hover {
     border-bottom: 1px solid var(--slate-100);
 }
 
-.report-month-row:last-child { border-bottom: 0; }
+    .report-month-row:last-child {
+        border-bottom: 0;
+    }
 
 .report-month-label {
     display: flex;
@@ -1059,15 +1003,22 @@ a:hover {
     justify-content: center;
 }
 
-.report-month-label strong {
-    color: var(--slate-800);
-    font-size: 0.82rem;
-    text-transform: capitalize;
+    .report-month-label strong {
+        color: var(--slate-800);
+        font-size: 0.82rem;
+        text-transform: capitalize;
+    }
+
+    .report-month-label small {
+        color: var(--slate-400);
+        font-size: 0.7rem;
+    }
+
+.report-month-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
 }
-
-.report-month-label small { color: var(--slate-400); font-size: 0.7rem; }
-
-.report-month-bars { display: flex; flex-direction: column; gap: 0.45rem; }
 
 .report-bar-line {
     display: grid;
@@ -1076,8 +1027,15 @@ a:hover {
     gap: 0.55rem;
 }
 
-.report-bar-line > i { font-size: 0.75rem; }
-.report-bar-line > small { color: var(--slate-600); font-size: 0.72rem; text-align: right; }
+    .report-bar-line > i {
+        font-size: 0.75rem;
+    }
+
+    .report-bar-line > small {
+        color: var(--slate-600);
+        font-size: 0.72rem;
+        text-align: right;
+    }
 
 .report-bar-track {
     display: block;
@@ -1095,10 +1053,21 @@ a:hover {
     transition: width 0.35s ease;
 }
 
-.report-bar-receita { background: linear-gradient(90deg, #10b981, #34d399); }
-.report-bar-despesa { background: linear-gradient(90deg, #f97316, #fb7185); }
-.report-category-track { height: 7px; }
-.report-category-row + .report-category-row { margin-top: 1.15rem; }
+.report-bar-receita {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.report-bar-despesa {
+    background: linear-gradient(90deg, #f97316, #fb7185);
+}
+
+.report-category-track {
+    height: 7px;
+}
+
+.report-category-row + .report-category-row {
+    margin-top: 1.15rem;
+}
 
 .report-legend {
     display: flex;
@@ -1107,8 +1076,17 @@ a:hover {
     font-size: 0.74rem;
 }
 
-.report-legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
-.report-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .report-legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+.report-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
 
 .report-empty-state {
     min-height: 190px;
@@ -1121,9 +1099,18 @@ a:hover {
     text-align: center;
 }
 
-.report-empty-state i { font-size: 1.7rem; }
-.report-empty-state p { margin: 0; font-size: 0.86rem; }
-.report-empty-compact { min-height: 125px; }
+    .report-empty-state i {
+        font-size: 1.7rem;
+    }
+
+    .report-empty-state p {
+        margin: 0;
+        font-size: 0.86rem;
+    }
+
+.report-empty-compact {
+    min-height: 125px;
+}
 
 .report-insight-row {
     display: flex;
@@ -1143,15 +1130,31 @@ a:hover {
     border-radius: var(--radius-sm);
 }
 
-.report-insight-row strong { color: var(--slate-800); font-size: 0.85rem; }
-.report-insight-row p { margin: 0.2rem 0 0; color: var(--slate-500); font-size: 0.78rem; line-height: 1.45; }
-
-@media (max-width: 767.98px) {
-    .relatorios-hero { align-items: stretch; flex-direction: column; padding: 1.5rem; gap: 1.25rem; }
-    .relatorios-periodo-resumo { min-width: 0; }
+.report-insight-row strong {
+    color: var(--slate-800);
+    font-size: 0.85rem;
 }
 
-/* Coluna Formulário (Direita) */
+.report-insight-row p {
+    margin: 0.2rem 0 0;
+    color: var(--slate-500);
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+@media (max-width: 767.98px) {
+    .relatorios-hero {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 1.5rem;
+        gap: 1.25rem;
+    }
+
+    .relatorios-periodo-resumo {
+        min-width: 0;
+    }
+}
+
 .login-form-side {
     flex: 1.1;
     padding: 3.5rem 3rem;
@@ -1184,36 +1187,36 @@ a:hover {
     align-items: center;
 }
 
-.input-icon-group .input-icon-prefix {
-    position: absolute;
-    left: 1rem;
-    color: var(--slate-400);
-    font-size: 1.1rem;
-    pointer-events: none;
-    z-index: 4;
-}
+    .input-icon-group .input-icon-prefix {
+        position: absolute;
+        left: 1rem;
+        color: var(--slate-400);
+        font-size: 1.1rem;
+        pointer-events: none;
+        z-index: 4;
+    }
 
-.input-icon-group .form-control {
-    padding-left: 2.75rem;
-    padding-right: 2.75rem;
-    height: 48px;
-}
+    .input-icon-group .form-control {
+        padding-left: 2.75rem;
+        padding-right: 2.75rem;
+        height: 48px;
+    }
 
-.input-icon-group .btn-toggle-password {
-    position: absolute;
-    right: 0.75rem;
-    background: none;
-    border: none;
-    color: var(--slate-400);
-    cursor: pointer;
-    padding: 0.25rem 0.5rem;
-    font-size: 1.1rem;
-    z-index: 4;
-}
+    .input-icon-group .btn-toggle-password {
+        position: absolute;
+        right: 0.75rem;
+        background: none;
+        border: none;
+        color: var(--slate-400);
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        font-size: 1.1rem;
+        z-index: 4;
+    }
 
-.input-icon-group .btn-toggle-password:hover {
-    color: var(--slate-700);
-}
+        .input-icon-group .btn-toggle-password:hover {
+            color: var(--slate-700);
+        }
 
 .btn-login-submit {
     width: 100%;
@@ -1233,28 +1236,21 @@ a:hover {
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
 
-.btn-login-submit:hover {
-    background: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
-}
+    .btn-login-submit:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    }
 
-/* --------------------------------------------------------------------------
-   8. Responsividade & Media Queries
-   -------------------------------------------------------------------------- */
 @media (max-width: 991.98px) {
     .app-sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
         transform: translateX(-100%);
         transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .app-sidebar.show {
-        transform: translateX(0);
-    }
+        .app-sidebar.show {
+            transform: translateX(0);
+        }
 
     .sidebar-close-btn {
         display: block;
@@ -1263,6 +1259,11 @@ a:hover {
     .sidebar-backdrop.show {
         display: block;
         opacity: 1;
+    }
+
+    .app-main {
+        width: 100%;
+        margin-left: 0;
     }
 
     .app-content {

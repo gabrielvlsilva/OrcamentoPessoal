@@ -37,7 +37,7 @@ namespace OrcamentoPessoal.Models
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(Nome)) return "Usuário";
+                if (string.IsNullOrWhiteSpace(Nome)) return string.IsNullOrWhiteSpace(CPF) ? "Conta" : CPF;
                 var partes = Nome.Trim().Split(' ');
                 return partes[0];
             }

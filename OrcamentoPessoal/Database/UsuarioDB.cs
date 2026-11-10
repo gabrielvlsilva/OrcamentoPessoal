@@ -34,7 +34,7 @@ namespace OrcamentoPessoal.Database
             };
 
             const string sql = @"
-                SELECT USR_AIC AS Id, USR_CFJ AS CPF, USR_PSW AS SenhaHash
+                SELECT USR_AIC AS Id, USR_CFJ AS CPF, USR_NM AS Nome, USR_PSW AS SenhaHash
                 FROM usr
                 WHERE USR_CFJ IN (@CPF, @CPFFormatado)
                 ORDER BY USR_AIC
@@ -59,7 +59,7 @@ namespace OrcamentoPessoal.Database
             {
                 Id = usuarios[0].Id,
                 CPF = usuarios[0].CPF,
-                Nome = "Usuário",
+                Nome = string.IsNullOrWhiteSpace(usuarios[0].Nome) ? usuarios[0].CPF : usuarios[0].Nome.Trim(),
                 Perfil = "Usuário",
                 Ativo = true
             };

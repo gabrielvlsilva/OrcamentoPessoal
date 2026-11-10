@@ -9,11 +9,10 @@
     <div class="alert alert-danger" role="alert">@ViewBag.DashboardErro</div>
 }
 
-<!-- Cabeçalho de Boas-Vindas & Ações Rápidas -->
 <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
     <div>
         <h2 class="h3 fw-bold mb-1 text-dark">
-            Olá, @(Model?.Usuario?.PrimeiroNome ?? "Usuário")! 👋
+            Olá, @(Model?.Usuario?.PrimeiroNome ?? "Conta")! 👋
         </h2>
         <p class="text-muted mb-0 small">
             Acompanhe suas finanças e o status de processamento inteligente de documentos para o período de <strong>@(Model?.MesAtualNome ?? "Mês Atual")</strong>.
@@ -21,34 +20,7 @@
     </div>
 </div>
 
-<!-- Banner de Visão do Projeto: Leitor Inteligente de Arquivos Financeiros com IA -->
-<div class="ai-banner-card">
-    <div class="row align-items-center position-relative" style="z-index: 2;">
-        <div class="col-12 col-lg-8">
-            <span class="badge bg-white text-primary fw-bold text-uppercase px-2 py-1 mb-2 small">
-                <i class="bi bi-stars"></i> Análise com IA
-            </span>
-            <h3 class="h4 text-white fw-bold mb-2">
-                Leitura Automatizada de Documentos Financeiros
-            </h3>
-            <p class="text-light mb-0 opacity-75 small" style="max-width: 680px;">
-                Envie documentos financeiros para identificar e categorizar lançamentos a partir de
-                <strong>extratos em PDF</strong>, <strong>faturas de cartão</strong> e <strong>planilhas (.xlsx/.csv)</strong>,
-                mantendo os dados e a persistência sob responsabilidade da aplicação.
-            </p>
-        </div>
-        <div class="col-12 col-lg-4 text-lg-end mt-3 mt-lg-0">
-            <div class="d-inline-flex flex-column align-items-lg-end bg-dark bg-opacity-50 p-3 rounded-3 border border-secondary border-opacity-25">
-                <span class="text-info fw-bold small"><i class="bi bi-cpu me-1"></i> @Model.TotalDocumentosProcessados documento(s) analisado(s)</span>
-                <span class="text-white-50 small">@Model.TotalTransacoesExtraidasIA lançamento(s) importado(s)</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Grid de Indicadores Principais (KPI Cards) -->
 <div class="row g-3 mb-4">
-    <!-- Saldo Atual -->
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="stat-card h-100">
             <div class="stat-card-header">
@@ -65,7 +37,6 @@
         </div>
     </div>
 
-    <!-- Receitas do Mês -->
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="stat-card h-100">
             <div class="stat-card-header">
@@ -82,7 +53,6 @@
         </div>
     </div>
 
-    <!-- Despesas do Mês -->
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="stat-card h-100">
             <div class="stat-card-header">
@@ -99,7 +69,6 @@
         </div>
     </div>
 
-    <!-- IA Processamento -->
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="stat-card h-100">
             <div class="stat-card-header">
@@ -117,11 +86,8 @@
     </div>
 </div>
 
-<!-- Conteúdo Central: Tabelas de Transações e Documentos IA -->
 <div class="row g-4">
-    <!-- Coluna Esquerda: Transações Recentes e Arquivos Processados -->
     <div class="col-12 col-lg-8">
-        <!-- Card: Últimas Transações -->
         <div class="card-app mb-4">
             <div class="card-app-header">
                 <h3 class="card-app-title">
@@ -199,7 +165,6 @@
             </div>
         </div>
 
-        <!-- Card: Arquivos Financeiros Analisados por IA -->
         <div class="card-app">
             <div class="card-app-header">
                 <h3 class="card-app-title">
@@ -274,9 +239,7 @@
         </div>
     </div>
 
-    <!-- Coluna Direita: Categorias de Orçamento e Upload de Arquivos -->
     <div class="col-12 col-lg-4">
-        <!-- Metas por Categoria -->
         <div class="card-app mb-4">
             <div class="card-app-header">
                 <h3 class="card-app-title">
@@ -316,7 +279,6 @@
             </div>
         </div>
 
-        <!-- Card de Upload de Arquivos Financeiros -->
         <div class="card-app" id="formImportarArquivo">
             <div class="card-app-header">
                 <h3 class="card-app-title">

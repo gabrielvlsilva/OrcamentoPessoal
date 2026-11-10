@@ -1,304 +1,886 @@
 ﻿@model OrcamentoPessoal.Models.RelatoriosViewModel
 @using System.Globalization
 @using System.Linq
+@using Newtonsoft.Json
 @{
-    ViewBag.Title = "Relatórios & Planilhas";
-    ViewBag.PageTitle = "Relatórios & Planilhas";
+    ViewBag.Title = "Relatórios & Insights";
+    ViewBag.PageTitle = "Relatórios & Insights";
+
     var cultura = CultureInfo.GetCultureInfo("pt-BR");
+    var hoje = DateTime.Today;
+    var periodoAtual = new DateTime(Model.AnoReferencia, Model.MesReferencia, 1);
+    var periodoAnterior = periodoAtual.AddMonths(-1);
+    var periodoProximo = periodoAtual.AddMonths(1);
+    bool proximoBloqueado = periodoProximo > new DateTime(hoje.Year, hoje.Month, 1);
+    bool temDados = Model.TemHistorico;
+    string nomePeriodo = cultura.TextInfo.ToTitleCase(Model.PeriodoNome);
+    string nomePeriodoAnterior = cultura.TextInfo.ToTitleCase(periodoAnterior.ToString("MMMM yyyy", cultura));
+    int offsetCalendario = (int)periodoAtual.DayOfWeek;
+    string[] letrasSemana = { "D", "S", "T", "Q", "Q", "S", "S" };
+
+    var evo = Model.EvolucaoMensal;
+    var dados = new
+    {
+        evolucao = new
+        {
+            labels = evo.Select(i => i.Rotulo).ToList(),
+            receitas = evo.Select(i => i.Receitas).ToList(),
+            despesas = evo.Select(i => i.Despesas).ToList(),
+            saldo = evo.Select(i => i.Saldo).ToList(),
+            acumulado = evo.Select(i => i.SaldoAcumulado).ToList(),
+            poupanca = evo.Select(i => i.TaxaPoupanca).ToList()
+        },
+        despesasCat = new
+        {
+            labels = Model.DespesasPorCategoria.Select(c => c.Nome).ToList(),
+            values = Model.DespesasPorCategoria.Select(c => c.Valor).ToList(),
+            colors = Model.DespesasPorCategoria.Select(c => c.Cor).ToList()
+        },
+        receitasCat = new
+        {
+            labels = Model.ReceitasPorCategoria.Select(c => c.Nome).ToList(),
+            values = Model.ReceitasPorCategoria.Select(c => c.Valor).ToList(),
+            colors = Model.ReceitasPorCategoria.Select(c => c.Cor).ToList()
+        },
+        dias = new
+        {
+            labels = Model.Dias.Select(d => d.Dia).ToList(),
+            atual = Model.AcumuladoDespesas,
+            anterior = Model.AcumuladoDespesasAnterior,
+            diario = Model.Dias.Select(d => d.Despesas).ToList(),
+            nomeAtual = nomePeriodo,
+            nomeAnterior = nomePeriodoAnterior
+        },
+        semana = new
+        {
+            labels = new[] { "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb" },
+            values = Model.GastoMedioPorDiaSemana
+        },
+        score = Model.ScoreFinanceiro,
+        scoreCor = Model.ScoreCor
+    };
+    string dadosJson = JsonConvert.SerializeObject(dados, new JsonSerializerSettings
+    {
+        StringEscapeHandling = StringEscapeHandling.EscapeHtml
+    });
 }
 
-<section class="relatorios-hero mb-4">
-    <div class="relatorios-hero-content">
-        <span class="relatorios-eyebrow"><i class="bi bi-stars me-1"></i> PAINEL FINANCEIRO</span>
-        <h1 class="h2 fw-bold mb-2">Seu dinheiro, em perspectiva.</h1>
-        <p class="mb-0 text-white-50">Acompanhe receitas, despesas e os lançamentos importados em um só lugar.</p>
-    </div>
-    <div class="relatorios-periodo-resumo">
-        <span>PERÍODO ANALISADO</span>
-        <strong>@Model.PeriodoNome</strong>
-        <small>@Model.TotalLancamentos lançamento(s) concluído(s)</small>
-    </div>
-</section>
-
-@if (ViewBag.RelatorioErro != null || !string.IsNullOrWhiteSpace(Model.Erro))
+@helper Delta(decimal? variacao, bool maisEhBom)
 {
-    <div class="relatorios-aviso mb-4" role="status">
-        <i class="bi bi-info-circle-fill me-2"></i>
-        @(ViewBag.RelatorioErro ?? Model.Erro)
+    if (!variacao.HasValue)
+    {
+        <span class="rp-chip rp-chip--flat"><i class="bi bi-dash"></i> sem base</span>
+    }
+    else
+    {
+        var v = variacao.Value;
+        string cls = v == 0 ? "rp-chip--flat" : ((v > 0) == maisEhBom ? "rp-chip--good" : "rp-chip--bad");
+        string icone = v > 0 ? "bi-arrow-up-right" : (v < 0 ? "bi-arrow-down-right" : "bi-dash");
+        <span class="rp-chip @cls"><i class="bi @icone"></i> @(Math.Abs(v).ToString("0.#", System.Globalization.CultureInfo.GetCultureInfo("pt-BR")))%</span>
+    }
+}
+
+@section styles {
+    <link href="@Url.Content("~/Content/relatorios.css")" rel="stylesheet" />
+}
+
+<section class="rp-hero">
+    <div>
+        <span class="rp-eyebrow"><i class="bi bi-stars"></i> CENTRAL DE INTELIGÊNCIA FINANCEIRA</span>
+        <h1 class="rp-hero-title">@Model.Manchete</h1>
+        <div class="rp-hero-stats">
+            <div class="rp-hero-stat">
+                <span>Resultado do mês</span>
+                <strong class="@(Model.SaldoPeriodo >= 0 ? "rp-pos" : "rp-neg")">@Model.SaldoFormatado</strong>
+            </div>
+            <div class="rp-hero-stat">
+                <span>Saldo acumulado</span>
+                <strong>@Model.SaldoAcumuladoFormatado</strong>
+            </div>
+            <div class="rp-hero-stat">
+                <span>Lançamentos</span>
+                <strong>@Model.TotalLancamentos</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="rp-period rp-noprint">
+        <span class="rp-period-label">PERÍODO ANALISADO</span>
+        <div class="rp-period-nav">
+            <a class="rp-icon-btn" href="@Url.Action("Relatorios", "Home", new { mes = periodoAnterior.Month, ano = periodoAnterior.Year })" title="Mês anterior" aria-label="Mês anterior"><i class="bi bi-chevron-left"></i></a>
+            @using (Html.BeginForm("Relatorios", "Home", FormMethod.Get))
+            {
+                <select id="mes" name="mes" class="form-select form-select-sm" onchange="this.form.submit()" aria-label="Mês">
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        <option value="@m" @(Model.MesReferencia == m ? "selected" : "")>@cultura.TextInfo.ToTitleCase(new DateTime(2000, m, 1).ToString("MMMM", cultura))</option>
+                    }
+                </select>
+                <input id="ano" name="ano" type="number" class="form-control form-control-sm" min="2000" max="2100" value="@Model.AnoReferencia" onchange="this.form.submit()" aria-label="Ano" />
+            }
+            <a class="rp-icon-btn @(proximoBloqueado ? "disabled" : "")" href="@Url.Action("Relatorios", "Home", new { mes = periodoProximo.Month, ano = periodoProximo.Year })" title="Próximo mês" aria-label="Próximo mês"><i class="bi bi-chevron-right"></i></a>
+        </div>
+        <div class="rp-period-actions">
+            <a class="btn btn-sm" href="@Url.Action("Relatorios", "Home")"><i class="bi bi-calendar-check me-1"></i> Último mês</a>
+            <a class="btn btn-sm" href="@Url.Action("ExportarRelatorio", "Home", new { mes = Model.MesReferencia, ano = Model.AnoReferencia })"><i class="bi bi-file-earmark-spreadsheet me-1"></i> CSV</a>
+            <button type="button" class="btn btn-sm" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimir</button>
+        </div>
+    </div>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(Model.Erro) || ViewBag.RelatorioErro != null)
+{
+    <div class="rp-aviso" role="status">
+        <i class="bi bi-info-circle-fill me-2"></i>@(ViewBag.RelatorioErro ?? Model.Erro)
     </div>
 }
 
-<section class="card-app mb-4">
-    <div class="card-app-body py-3">
-        <div class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-3">
-            <div>
-                <h2 class="h6 fw-bold mb-1">Escolha o período</h2>
-                <p class="text-muted small mb-0">Os indicadores consideram lançamentos concluídos com data no mês selecionado.</p>
-            </div>
-            <div class="d-flex flex-wrap align-items-end gap-2">
-                @using (Html.BeginForm("Relatorios", "Home", FormMethod.Get, new { @class = "d-flex flex-wrap align-items-end gap-2" }))
-                {
+@if (!temDados)
+{
+    <section class="card-app">
+        <div class="rp-empty">
+            <i class="bi bi-graph-up-arrow"></i>
+            <h3 class="h5">Seus relatórios aparecem aqui</h3>
+            <p class="mb-3">Importe um extrato, uma fatura ou uma planilha e a IA monta gráficos, score e insights automaticamente.</p>
+            <a href="@(Url.Action("Index", "Home"))#formImportarArquivo" class="btn btn-app-ai"><i class="bi bi-upload"></i> Importar arquivo</a>
+        </div>
+    </section>
+}
+else
+{
+    <section class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="rp-kpi" style="--rp-accent:#10b981">
+                <div class="rp-kpi-top"><span class="rp-kpi-label">Receitas</span><span class="rp-kpi-icon"><i class="bi bi-arrow-down-left-circle"></i></span></div>
+                <div class="rp-kpi-value">@Model.ReceitasFormatado</div>
+                <div class="rp-kpi-sub">@Delta(Model.VariacaoReceitas, true) <span>vs. mês anterior · @Model.QuantidadeReceitas lanç.</span></div>
+                <div class="rp-spark"><canvas id="spark-rec"></canvas></div>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="rp-kpi" style="--rp-accent:#f43f5e">
+                <div class="rp-kpi-top"><span class="rp-kpi-label">Despesas</span><span class="rp-kpi-icon"><i class="bi bi-arrow-up-right-circle"></i></span></div>
+                <div class="rp-kpi-value">@Model.DespesasFormatado</div>
+                <div class="rp-kpi-sub">@Delta(Model.VariacaoDespesas, false) <span>vs. mês anterior · @Model.QuantidadeDespesas lanç.</span></div>
+                <div class="rp-spark"><canvas id="spark-desp"></canvas></div>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="rp-kpi" style="--rp-accent:#6366f1">
+                <div class="rp-kpi-top"><span class="rp-kpi-label">Resultado do mês</span><span class="rp-kpi-icon"><i class="bi bi-wallet2"></i></span></div>
+                <div class="rp-kpi-value @(Model.SaldoPeriodo < 0 ? "text-danger" : "")">@Model.SaldoFormatado</div>
+                <div class="rp-kpi-sub">
+                    @if (Model.TaxaPoupanca.HasValue)
+                    {
+                        <span class="rp-chip @(Model.TaxaPoupanca.Value >= 20 ? "rp-chip--good" : (Model.TaxaPoupanca.Value < 0 ? "rp-chip--bad" : "rp-chip--flat"))">@Model.TaxaPoupanca.Value.ToString("0.#", cultura)%</span>
+                        <span>da renda poupada</span>
+                    }
+                    else
+                    {
+                        <span>Sem receitas para calcular a poupança</span>
+                    }
+                </div>
+                <div class="rp-spark"><canvas id="spark-saldo"></canvas></div>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="rp-kpi" style="--rp-accent:#8b5cf6">
+                <div class="rp-kpi-top"><span class="rp-kpi-label">Gasto médio por dia</span><span class="rp-kpi-icon"><i class="bi bi-speedometer2"></i></span></div>
+                <div class="rp-kpi-value">@Model.MediaDiariaFormatada</div>
+                <div class="rp-kpi-sub">
+                    @if (Model.ProjecaoDespesas.HasValue)
+                    {
+                        <span><i class="bi bi-graph-up-arrow"></i> Projeção do mês: <strong>@Model.ProjecaoFormatada</strong></span>
+                    }
+                    else
+                    {
+                        <span>Mês anterior: <strong>@Model.MediaDiariaAnteriorFormatada</strong>/dia</span>
+                    }
+                </div>
+                <div class="rp-spark"><canvas id="spark-dia"></canvas></div>
+            </article>
+        </div>
+    </section>
+
+    <section class="row g-4 mb-4">
+        <div class="col-12 col-xl-4">
+            <div class="card-app rp-card">
+                <div class="card-app-header">
                     <div>
-                        <label for="mes" class="form-label small fw-semibold mb-1">Mês</label>
-                        <select id="mes" name="mes" class="form-select form-select-sm">
-                            @for (int mes = 1; mes <= 12; mes++)
+                        <h2 class="card-app-title"><i class="bi bi-heart-pulse text-danger"></i> Score financeiro</h2>
+                        <p class="rp-sub">Saúde do orçamento em @nomePeriodo</p>
+                    </div>
+                </div>
+                <div class="card-app-body">
+                    @if (Model.ScoreFinanceiro.HasValue)
+                    {
+                        <div class="rp-gauge">
+                            <canvas id="rpGauge"></canvas>
+                            <div class="rp-gauge-center">
+                                <strong style="color:@Model.ScoreCor">@Model.ScoreFinanceiro</strong>
+                                <span style="background:@Model.ScoreCor">@Model.ScoreRotulo</span>
+                            </div>
+                        </div>
+                        foreach (var item in Model.ScoreItens)
+                        {
+                            <div class="rp-score-item">
+                                <div class="rp-score-item-head"><span>@item.Nome</span><span>@item.Pontos/@item.Maximo</span></div>
+                                <div class="rp-bar" style="--rp-bar:@Model.ScoreCor"><span style="width: @item.Percentual%;"></span></div>
+                                <small>@item.Dica</small>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="rp-chart-empty" style="height:200px">Sem movimentações neste mês para calcular o score.</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-8">
+            <div class="card-app rp-card">
+                <div class="card-app-header">
+                    <div>
+                        <h2 class="card-app-title"><i class="bi bi-lightbulb text-warning"></i> Insights automáticos</h2>
+                        <p class="rp-sub">Padrões e alertas identificados nos seus lançamentos</p>
+                    </div>
+                    <span class="badge-ai"><i class="bi bi-stars"></i> Análise inteligente</span>
+                </div>
+                <div class="card-app-body">
+                    <div class="rp-insights">
+                        @foreach (var insight in Model.Insights)
+                        {
+                            <div class="rp-insight rp-insight--@insight.Nivel">
+                                <i class="bi @insight.Icone"></i>
+                                <div>
+                                    <strong>@insight.Titulo</strong>
+                                    <p>@insight.Texto</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="row g-4 mb-4">
+        <div class="col-12 col-xl-8">
+            <div class="card-app rp-card">
+                <div class="card-app-header">
+                    <div>
+                        <h2 class="card-app-title"><i class="bi bi-bar-chart-line text-primary"></i> Evolução financeira</h2>
+                        <p class="rp-sub">Mês selecionado em destaque</p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 rp-noprint">
+                        <div class="rp-seg" id="rpEvoView">
+                            <button type="button" class="active" data-view="fluxo">Fluxo</button>
+                            <button type="button" data-view="acumulado">Saldo acumulado</button>
+                            <button type="button" data-view="poupanca">Poupança %</button>
+                        </div>
+                        <div class="rp-seg" id="rpEvoN">
+                            <button type="button" data-n="6">6M</button>
+                            <button type="button" class="active" data-n="12">12M</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-app-body"><div class="rp-chart"><canvas id="rpEvo"></canvas></div></div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <div class="card-app rp-card">
+                <div class="card-app-header">
+                    <div>
+                        <h2 class="card-app-title"><i class="bi bi-pie-chart text-danger"></i> Despesas por categoria</h2>
+                        <p class="rp-sub">Para onde foi o dinheiro</p>
+                    </div>
+                </div>
+                <div class="card-app-body">
+                    @if (Model.DespesasPorCategoria.Any())
+                    {
+                        <div class="rp-donut-wrap">
+                            <canvas id="rpDonutDesp"></canvas>
+                            <div class="rp-donut-center"><small>Total</small><strong>@Model.DespesasFormatado</strong></div>
+                        </div>
+                        <div class="rp-legend">
+                            @foreach (var c in Model.DespesasPorCategoria)
                             {
-                                string nomeMes = cultura.TextInfo.ToTitleCase(new DateTime(Model.AnoReferencia, mes, 1).ToString("MMMM", cultura));
-                                <option value="@mes" @(Model.MesReferencia == mes ? "selected" : "")>@nomeMes</option>
+                                <div class="rp-legend-item">
+                                    <span class="rp-dot" style="--c: @c.Cor;"></span>
+                                    <span class="nome">@c.Nome</span>
+                                    <span class="pct">@c.Percentual%</span>
+                                    <span class="val">@c.ValorFormatado</span>
+                                </div>
                             }
-                        </select>
-                    </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="rp-chart-empty" style="height:240px">Sem despesas registradas no período.</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="row g-4 mb-4">
+        <div class="col-12 col-lg-7">
+            <div class="card-app rp-card">
+                <div class="card-app-header">
                     <div>
-                        <label for="ano" class="form-label small fw-semibold mb-1">Ano</label>
-                        <input id="ano" name="ano" type="number" class="form-control form-control-sm" min="2000" max="2100" value="@Model.AnoReferencia" />
+                        <h2 class="card-app-title"><i class="bi bi-activity text-primary"></i> Ritmo de gastos</h2>
+                        <p class="rp-sub">Despesa acumulada dia a dia: este mês x mês anterior</p>
                     </div>
-                    <button type="submit" class="btn btn-sm btn-app-primary">
-                        <i class="bi bi-funnel me-1"></i> Aplicar
-                    </button>
-                }
-                <a href="@Url.Action("ExportarRelatorio", "Home", new { mes = Model.MesReferencia, ano = Model.AnoReferencia })" class="btn btn-sm btn-outline-success">
-                    <i class="bi bi-file-earmark-spreadsheet me-1"></i> Baixar planilha
-                </a>
+                </div>
+                <div class="card-app-body"><div class="rp-chart rp-chart--sm"><canvas id="rpAcum"></canvas></div></div>
             </div>
         </div>
-    </div>
-</section>
-
-<section class="row g-3 mb-4">
-    <div class="col-12 col-sm-6 col-xl-3">
-        <article class="report-kpi report-kpi-receita h-100">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <span>Receitas</span><i class="bi bi-arrow-down-left-circle"></i>
-            </div>
-            <strong>@Model.ReceitasFormatado</strong>
-            <small>@Model.QuantidadeReceitas lançamento(s) · anterior: @Model.ReceitasMesAnteriorFormatado</small>
-        </article>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-        <article class="report-kpi report-kpi-despesa h-100">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <span>Despesas</span><i class="bi bi-arrow-up-right-circle"></i>
-            </div>
-            <strong>@Model.DespesasFormatado</strong>
-            <small>@Model.QuantidadeDespesas lançamento(s) · anterior: @Model.DespesasMesAnteriorFormatado</small>
-        </article>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-        <article class="report-kpi report-kpi-saldo h-100">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <span>Resultado do período</span><i class="bi bi-wallet2"></i>
-            </div>
-            <strong>@Model.SaldoFormatado</strong>
-            <small>Receitas menos despesas do período</small>
-        </article>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-        <article class="report-kpi report-kpi-arquivos h-100">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <span>Arquivos analisados</span><i class="bi bi-file-earmark-check"></i>
-            </div>
-            <strong>@Model.TotalDocumentos</strong>
-            <small>Documento(s) processado(s) neste mês</small>
-        </article>
-    </div>
-</section>
-
-<section class="row g-4 mb-4">
-    <div class="col-12 col-xl-7">
-        <div class="card-app h-100 mb-0">
-            <div class="card-app-header">
-                <div>
-                    <h2 class="card-app-title"><i class="bi bi-bar-chart-line text-primary"></i> Evolução mensal</h2>
-                    <p class="small text-muted mb-0 mt-1">Comparativo dos últimos seis meses até @Model.PeriodoNome.</p>
+        <div class="col-12 col-lg-5">
+            <div class="card-app rp-card">
+                <div class="card-app-header">
+                    <div>
+                        <h2 class="card-app-title"><i class="bi bi-calendar-week text-info"></i> Gasto por dia da semana</h2>
+                        <p class="rp-sub">Média de despesas em cada dia</p>
+                    </div>
                 </div>
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">6 meses</span>
+                <div class="card-app-body"><div class="rp-chart rp-chart--sm"><canvas id="rpSemana"></canvas></div></div>
             </div>
-            <div class="card-app-body">
-                @if (Model.EvolucaoMensal.Any(item => item.Receitas > 0 || item.Despesas > 0))
-                {
-                    foreach (var item in Model.EvolucaoMensal)
-                    {
-                        <div class="report-month-row">
-                            <div class="report-month-label">
-                                <strong>@cultura.TextInfo.ToTitleCase(item.Nome)</strong>
-                                <small>@item.Ano</small>
+        </div>
+    </section>
+
+    <section class="row g-4 mb-4">
+        <div class="col-12 col-lg-6">
+            <div class="card-app rp-card">
+                <div class="card-app-header">
+                    <div>
+                        <h2 class="card-app-title"><i class="bi bi-calendar3 text-primary"></i> Calendário de gastos</h2>
+                        <p class="rp-sub">Quanto mais escuro, maior o gasto no dia</p>
+                    </div>
+                </div>
+                <div class="card-app-body">
+                    <div class="rp-heat">
+                        @foreach (var letra in letrasSemana)
+                        {
+                            <span class="rp-heat-dow">@letra</span>
+                        }
+                        @for (int i = 0; i < offsetCalendario; i++)
+                        {
+                            <span class="rp-heat-cell rp-heat-empty"></span>
+                        }
+                        @foreach (var dia in Model.Dias)
+                        {
+                            bool futuro = dia.Dia > Model.DiasDecorridos;
+                            string classe = "rp-heat-cell rp-heat-" + dia.Nivel + (futuro ? " rp-heat-future" : "") + (dia.Receitas > 0 ? " rp-heat-income" : "");
+                            string dica = dia.Data.ToString("dd/MM", cultura) + ": " + (dia.Despesas > 0 ? dia.DespesasFormatado + " em despesas" : "sem despesas") + (dia.Receitas > 0 ? " · " + dia.ReceitasFormatado + " em receitas" : "");
+                            <span class="@classe" title="@dica"><b>@dia.Dia</b></span>
+                        }
+                    </div>
+                    <div class="rp-heat-legend">
+                        <span>Menos</span>
+                        <i style="background:#f1f5f9"></i><i style="background:#e0e7ff"></i><i style="background:#a5b4fc"></i><i style="background:#6366f1"></i><i style="background:#3730a3"></i>
+                        <span>Mais</span>
+                        <span class="ms-auto"><i style="background:#10b981;border-radius:50%;width:9px;height:9px"></i> dia com receita</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="card-app rp-card">
+                <div class="card-app-header">
+                    <div>
+                        <h2 class="card-app-title"><i class="bi bi-trophy text-warning"></i> Maiores gastos</h2>
+                        <p class="rp-sub">Onde o dinheiro mais pesou em @nomePeriodo</p>
+                    </div>
+                    <div class="rp-seg rp-noprint" id="rpRankTabs">
+                        <button type="button" class="active" data-tab="estab">Por descrição</button>
+                        <button type="button" data-tab="maiores">Maiores lançamentos</button>
+                    </div>
+                </div>
+                <div class="card-app-body">
+                    <div id="rpPanel-estab">
+                        @if (Model.TopEstabelecimentos.Any())
+                        {
+                            <div class="rp-rank">
+                                @{ int pos = 1; }
+                                @foreach (var e in Model.TopEstabelecimentos)
+                                {
+                                    <div class="rp-rank-item">
+                                        <span class="rp-rank-pos">@(pos++)</span>
+                                        <div style="min-width:0">
+                                            <div class="rp-rank-name" title="@e.Nome">@e.Nome</div>
+                                            <div class="rp-bar"><span style="width: @e.Percentual%; --rp-bar:#6366f1"></span></div>
+                                            <div class="rp-rank-meta">@e.Quantidade lançamento(s) · @e.Percentual% das despesas</div>
+                                        </div>
+                                        <div class="rp-rank-val">@e.ValorFormatado</div>
+                                    </div>
+                                }
                             </div>
-                            <div class="report-month-bars">
-                                <div class="report-bar-line" title="Receitas: @item.ReceitasFormatado">
-                                    <i class="bi bi-arrow-down-left text-success"></i>
-                                    <div class="report-bar-track"><span class="report-bar-fill report-bar-receita" style="width: @item.PercentualReceitas%;"></span></div>
-                                    <small>@item.ReceitasFormatado</small>
+                        }
+                        else
+                        {
+                            <div class="rp-chart-empty" style="height:220px">Sem despesas no período.</div>
+                        }
+                    </div>
+
+                    <div id="rpPanel-maiores" hidden>
+                        @if (Model.MaioresDespesas.Any())
+                        {
+                            <div class="rp-rank">
+                                @{ int pos2 = 1; }
+                                @foreach (var t in Model.MaioresDespesas)
+                                {
+                                    <div class="rp-rank-item">
+                                        <span class="rp-rank-pos">@(pos2++)</span>
+                                        <div style="min-width:0">
+                                            <div class="rp-rank-name" title="@t.Descricao">@t.Descricao</div>
+                                            <div class="rp-rank-meta">@t.DataFormatada · @t.CategoriaNome</div>
+                                        </div>
+                                        <div class="rp-rank-val text-danger">@t.ValorFormatado</div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="rp-chart-empty" style="height:220px">Sem despesas no período.</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="row g-4 mb-4">
+        <div class="col-12 col-xl-7">
+            <div class="card-app rp-card">
+                <div class="card-app-header">
+                    <div>
+                        <h2 class="card-app-title"><i class="bi bi-arrow-left-right text-primary"></i> Categorias: mês a mês</h2>
+                        <p class="rp-sub">@nomePeriodo x @nomePeriodoAnterior</p>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-app">
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th class="text-end">Este mês</th>
+                                <th class="text-end">Mês anterior</th>
+                                <th class="text-end">Variação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.ComparativoDespesas.Any())
+                            {
+                                foreach (var c in Model.ComparativoDespesas)
+                                {
+                                    <tr>
+                                        <td>
+                                            <span class="rp-dot me-2" style="--c: @c.Cor;"></span><span class="fw-semibold">@c.Nome</span>
+                                            <div class="rp-bar mt-1" style="max-width:160px;--rp-bar: @c.Cor;"><span style="width: @c.Percentual%;"></span></div>
+                                        </td>
+                                        <td class="text-end fw-bold">@c.ValorFormatado</td>
+                                        <td class="text-end text-muted">@c.ValorAnteriorFormatado</td>
+                                        <td class="text-end">
+                                            @if (c.ValorAnterior <= 0 && c.Valor > 0)
+                                            {
+                                                <span class="rp-chip rp-chip--flat">novo</span>
+                                            }
+                                            else if (c.Valor <= 0)
+                                            {
+                                                <span class="rp-chip rp-chip--good"><i class="bi bi-arrow-down-right"></i> 100%</span>
+                                            }
+                                            else
+                                            {
+                                                @Delta(c.Variacao, false)
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr><td colspan="4" class="text-center py-5 text-muted">Sem despesas para comparar.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-5">
+            <div class="card-app rp-card">
+                <div class="card-app-header">
+                    <div>
+                        <h2 class="card-app-title"><i class="bi bi-cash-coin text-success"></i> Receitas por categoria</h2>
+                        <p class="rp-sub">De onde vem o seu dinheiro</p>
+                    </div>
+                </div>
+                <div class="card-app-body">
+                    @if (Model.ReceitasPorCategoria.Any())
+                    {
+                        <div class="rp-donut-wrap">
+                            <canvas id="rpDonutRec"></canvas>
+                            <div class="rp-donut-center"><small>Total</small><strong>@Model.ReceitasFormatado</strong></div>
+                        </div>
+                        <div class="rp-legend">
+                            @foreach (var c in Model.ReceitasPorCategoria)
+                            {
+                                <div class="rp-legend-item">
+                                    <span class="rp-dot" style="--c: @c.Cor;"></span>
+                                    <span class="nome">@c.Nome</span>
+                                    <span class="pct">@c.Percentual%</span>
+                                    <span class="val">@c.ValorFormatado</span>
                                 </div>
-                                <div class="report-bar-line" title="Despesas: @item.DespesasFormatado">
-                                    <i class="bi bi-arrow-up-right text-danger"></i>
-                                    <div class="report-bar-track"><span class="report-bar-fill report-bar-despesa" style="width: @item.PercentualDespesas%;"></span></div>
-                                    <small>@item.DespesasFormatado</small>
-                                </div>
-                            </div>
+                            }
                         </div>
                     }
-                    <div class="report-legend mt-3">
-                        <span><i class="report-legend-dot report-bar-receita"></i> Receitas</span>
-                        <span><i class="report-legend-dot report-bar-despesa"></i> Despesas</span>
-                    </div>
-                }
-                else
-                {
-                    <div class="report-empty-state">
-                        <i class="bi bi-bar-chart-line"></i>
-                        <p>Nenhuma movimentação encontrada neste intervalo.</p>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-
-    <div class="col-12 col-xl-5">
-        <div class="card-app h-100 mb-0">
-            <div class="card-app-header">
-                <div>
-                    <h2 class="card-app-title"><i class="bi bi-pie-chart text-danger"></i> Despesas por categoria</h2>
-                    <p class="small text-muted mb-0 mt-1">Participação no total de despesas do mês.</p>
-                </div>
-            </div>
-            <div class="card-app-body">
-                @if (Model.DespesasPorCategoria.Any())
-                {
-                    foreach (var categoria in Model.DespesasPorCategoria)
+                    else
                     {
-                        <div class="report-category-row">
-                            <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
-                                <span class="fw-semibold small text-dark">@categoria.Nome</span>
-                                <span class="small text-muted">@categoria.Percentual%</span>
-                            </div>
-                            <div class="report-bar-track report-category-track">
-                                <span class="report-bar-fill report-bar-despesa" style="width: @categoria.Percentual%;"></span>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between mt-1">
-                                <small class="text-muted">@categoria.Quantidade lançamento(s)</small>
-                                <small class="fw-semibold">@categoria.ValorFormatado</small>
-                            </div>
-                        </div>
+                        <div class="rp-chart-empty" style="height:240px">Sem receitas registradas no período.</div>
                     }
-                }
-                else
-                {
-                    <div class="report-empty-state report-empty-compact">
-                        <i class="bi bi-receipt"></i>
-                        <p>Sem despesas registradas no período.</p>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="row g-4 mb-4">
-    <div class="col-12 col-lg-5">
-        <div class="card-app h-100 mb-0">
-            <div class="card-app-header">
-                <div>
-                    <h2 class="card-app-title"><i class="bi bi-pie-chart text-success"></i> Receitas por categoria</h2>
-                    <p class="small text-muted mb-0 mt-1">Origem dos valores recebidos no período.</p>
                 </div>
             </div>
-            <div class="card-app-body">
-                @if (Model.ReceitasPorCategoria.Any())
-                {
-                    foreach (var categoria in Model.ReceitasPorCategoria)
+        </div>
+    </section>
+
+    <section class="card-app mb-4">
+        <div class="card-app-header">
+            <div>
+                <h2 class="card-app-title"><i class="bi bi-robot text-info"></i> Qualidade da leitura por IA</h2>
+                <p class="rp-sub">Como os documentos de @nomePeriodo foram interpretados</p>
+            </div>
+            <a href="@Url.Action("Transacoes", "Home")" class="btn btn-sm btn-outline-primary rp-noprint">Revisar lançamentos <i class="bi bi-arrow-right ms-1"></i></a>
+        </div>
+        <div class="card-app-body">
+            <div class="rp-ia-grid">
+                <div class="rp-ia-box"><span>Documentos analisados</span><strong>@Model.TotalDocumentos</strong></div>
+                <div class="rp-ia-box"><span>Lançamentos via IA</span><strong>@Model.LancamentosIA</strong></div>
+                <div class="rp-ia-box"><span>Confiança média</span><strong>@Model.ConfiancaMediaIA%</strong></div>
+                <div class="rp-ia-box @(Model.LancamentosBaixaConfianca > 0 || Model.LancamentosSemData > 0 ? "warn" : "")">
+                    <span>Precisam de revisão</span><strong>@(Model.LancamentosBaixaConfianca + Model.LancamentosSemData)</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card-app">
+        <div class="card-app-header">
+            <div>
+                <h2 class="card-app-title"><i class="bi bi-list-ul text-primary"></i> Lançamentos do período</h2>
+                <p class="rp-sub"><span id="rpContagem">@Model.LancamentosRecentes.Count</span> de @Model.TotalLancamentos exibidos (máximo de 100 mais recentes)</p>
+            </div>
+            <div class="rp-toolbar rp-noprint">
+                <input id="rpBusca" type="search" class="form-control" placeholder="Buscar descrição ou categoria..." />
+                <select id="rpTipo" class="form-select" style="width:auto">
+                    <option value="">Todos</option>
+                    <option value="Receita">Receitas</option>
+                    <option value="Despesa">Despesas</option>
+                </select>
+            </div>
+        </div>
+        <div class="rp-table-wrap">
+            <table class="table-app" id="rpTabela">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Origem</th>
+                        <th>Tipo</th>
+                        <th class="text-end">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.LancamentosRecentes.Any())
                     {
-                        <div class="report-category-row">
-                            <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
-                                <span class="fw-semibold small text-dark">@categoria.Nome</span>
-                                <span class="small text-muted">@categoria.Percentual%</span>
-                            </div>
-                            <div class="report-bar-track report-category-track">
-                                <span class="report-bar-fill report-bar-receita" style="width: @categoria.Percentual%;"></span>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between mt-1">
-                                <small class="text-muted">@categoria.Quantidade lançamento(s)</small>
-                                <small class="fw-semibold">@categoria.ValorFormatado</small>
-                            </div>
-                        </div>
+                        foreach (var l in Model.LancamentosRecentes)
+                        {
+                            <tr data-busca="@((l.Descricao + " " + l.CategoriaNome).ToLowerInvariant())" data-tipo="@l.Tipo">
+                                <td class="text-muted small">@l.DataFormatada</td>
+                                <td class="fw-semibold">@l.Descricao</td>
+                                <td>@l.CategoriaNome</td>
+                                <td class="text-muted small">
+                                    @if (l.CriadoPorIA)
+                                    {
+                                        <span title="Confiança da IA: @((l.ConfiancaIA * 100).ToString("0"))%">@l.NomeArquivoOrigem</span>
+                                        if (l.ConfiancaIA < 0.7m)
+                                        {
+                                            <i class="bi bi-exclamation-triangle-fill text-warning ms-1" title="Confiança baixa"></i>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span>Manual</span>
+                                    }
+                                </td>
+                                <td><span class="@(l.Tipo == OrcamentoPessoal.Models.TipoTransacao.Receita ? "badge-finance-receita" : "badge-finance-despesa")">@l.Tipo</span></td>
+                                <td class="text-end fw-bold @(l.Tipo == OrcamentoPessoal.Models.TipoTransacao.Receita ? "text-success" : "text-danger")">@(l.Tipo == OrcamentoPessoal.Models.TipoTransacao.Receita ? "+" : "−") @l.ValorFormatado</td>
+                            </tr>
+                        }
                     }
-                }
-                else
-                {
-                    <div class="report-empty-state report-empty-compact">
-                        <i class="bi bi-cash-coin"></i>
-                        <p>Sem receitas registradas no período.</p>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-
-    <div class="col-12 col-lg-7">
-        <div class="card-app h-100 mb-0">
-            <div class="card-app-header">
-                <div>
-                    <h2 class="card-app-title"><i class="bi bi-lightbulb text-warning"></i> Como ler este relatório</h2>
-                    <p class="small text-muted mb-0 mt-1">Regras usadas nos indicadores.</p>
-                </div>
-            </div>
-            <div class="card-app-body">
-                <div class="report-insight-row">
-                    <span class="report-insight-icon"><i class="bi bi-calendar-check"></i></span>
-                    <div><strong>Período fechado pelo calendário</strong><p>O relatório usa a data do lançamento e considera do primeiro ao último dia do mês selecionado.</p></div>
-                </div>
-                <div class="report-insight-row">
-                    <span class="report-insight-icon"><i class="bi bi-check2-circle"></i></span>
-                    <div><strong>Somente lançamentos concluídos</strong><p>Itens pendentes ou cancelados não entram nos totais e gráficos.</p></div>
-                </div>
-                <div class="report-insight-row mb-0">
-                    <span class="report-insight-icon"><i class="bi bi-file-earmark-spreadsheet"></i></span>
-                    <div><strong>Planilha pronta para Excel</strong><p>A exportação contém os lançamentos do período em CSV compatível com planilhas.</p></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="card-app">
-    <div class="card-app-header">
-        <div>
-            <h2 class="card-app-title"><i class="bi bi-list-ul text-primary"></i> Lançamentos do período</h2>
-            <p class="small text-muted mb-0 mt-1">Exibindo até 20 lançamentos concluídos mais recentes.</p>
-        </div>
-        <span class="badge bg-light text-dark border">@Model.TotalLancamentos no total</span>
-    </div>
-    <div class="table-responsive">
-        <table class="table-app">
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Descrição</th>
-                    <th>Categoria</th>
-                    <th>Origem</th>
-                    <th>Tipo</th>
-                    <th class="text-end">Valor</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model.LancamentosRecentes.Any())
-                {
-                    foreach (var lancamento in Model.LancamentosRecentes)
+                    else
                     {
-                        <tr>
-                            <td class="text-muted small">@lancamento.DataFormatada</td>
-                            <td class="fw-semibold">@lancamento.Descricao</td>
-                            <td>@(string.IsNullOrWhiteSpace(lancamento.CategoriaNome) ? "Sem categoria" : lancamento.CategoriaNome)</td>
-                            <td class="text-muted small">@(lancamento.CriadoPorIA ? lancamento.NomeArquivoOrigem : "Manual")</td>
-                            <td><span class="@(lancamento.Tipo == OrcamentoPessoal.Models.TipoTransacao.Receita ? "badge-finance-receita" : "badge-finance-despesa")">@lancamento.Tipo</span></td>
-                            <td class="text-end fw-bold @(lancamento.Tipo == OrcamentoPessoal.Models.TipoTransacao.Receita ? "text-success" : "text-danger")">@lancamento.ValorFormatado</td>
-                        </tr>
+                        <tr><td colspan="6" class="text-center py-5 text-muted">Nenhum lançamento concluído com data neste período.</td></tr>
                     }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+
+@section scripts {
+    @if (temDados)
+    {
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+        <script>
+            var RP = @Html.Raw(dadosJson)
+
+            (function () {
+                'use strict';
+
+                var busca = document.getElementById('rpBusca');
+                var tipo = document.getElementById('rpTipo');
+                var contagem = document.getElementById('rpContagem');
+                var linhas = [].slice.call(document.querySelectorAll('#rpTabela tbody tr[data-busca]'));
+
+                function filtrar() {
+                    var termo = busca.value.trim().toLowerCase();
+                    var t = tipo.value;
+                    var n = 0;
+                    linhas.forEach(function (tr) {
+                        var ok = (!termo || tr.getAttribute('data-busca').indexOf(termo) > -1) &&
+                                 (!t || tr.getAttribute('data-tipo') === t);
+                        tr.hidden = !ok;
+                        if (ok) n++;
+                    });
+                    contagem.textContent = n;
                 }
-                else
-                {
-                    <tr><td colspan="6" class="text-center py-5 text-muted">Nenhum lançamento concluído com data neste período.</td></tr>
+                if (busca && tipo) {
+                    busca.addEventListener('input', filtrar);
+                    tipo.addEventListener('change', filtrar);
                 }
-            </tbody>
-        </table>
-    </div>
-</section>
+
+                var abas = document.getElementById('rpRankTabs');
+                if (abas) {
+                    abas.addEventListener('click', function (e) {
+                        var btn = e.target.closest('button[data-tab]');
+                        if (!btn) return;
+                        [].forEach.call(abas.querySelectorAll('button'), function (b) { b.classList.toggle('active', b === btn); });
+                        document.getElementById('rpPanel-estab').hidden = btn.getAttribute('data-tab') !== 'estab';
+                        document.getElementById('rpPanel-maiores').hidden = btn.getAttribute('data-tab') !== 'maiores';
+                    });
+                }
+
+                if (typeof Chart === 'undefined') return;
+
+                Chart.defaults.font.family = "'DM Sans', sans-serif";
+                Chart.defaults.color = '#64748b';
+                var GRID = { color: '#eef2f7' };
+                var NOBORDER = { display: false };
+
+                function brl(v) {
+                    return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                }
+                function tickBrl(v) { return brl(v).replace(',00', ''); }
+                function valorTooltip(c) {
+                    var v = (c.parsed && typeof c.parsed === 'object') ? c.parsed.y : c.parsed;
+                    return ' ' + (c.dataset.label || c.label) + ': ' + brl(v);
+                }
+                function grad(rgb) {
+                    return function (c) {
+                        var a = c.chart.chartArea;
+                        if (!a) return 'rgba(' + rgb + ',.15)';
+                        var g = c.chart.ctx.createLinearGradient(0, a.top, 0, a.bottom);
+                        g.addColorStop(0, 'rgba(' + rgb + ',.35)');
+                        g.addColorStop(1, 'rgba(' + rgb + ',0)');
+                        return g;
+                    };
+                }
+                function fade(color, n) {
+                    var r = [];
+                    for (var i = 0; i < n; i++) r.push(i === n - 1 ? color : color + '88');
+                    return r;
+                }
+
+                function spark(id, data, color) {
+                    var el = document.getElementById(id);
+                    if (!el) return;
+                    new Chart(el, {
+                        type: 'line',
+                        data: {
+                            labels: data.map(function (_, i) { return i; }),
+                            datasets: [{ data: data, borderColor: color, backgroundColor: color + '22', fill: true, tension: .4, pointRadius: 0, borderWidth: 2 }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, events: [],
+                            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                            scales: { x: { display: false }, y: { display: false } }
+                        }
+                    });
+                }
+                var ev = RP.evolucao;
+                spark('spark-rec', ev.receitas.slice(-6), '#10b981');
+                spark('spark-desp', ev.despesas.slice(-6), '#f43f5e');
+                spark('spark-saldo', ev.acumulado.slice(-6), '#6366f1');
+                spark('spark-dia', RP.dias.diario, '#8b5cf6');
+
+                var gauge = document.getElementById('rpGauge');
+                if (gauge && RP.score != null) {
+                    new Chart(gauge, {
+                        type: 'doughnut',
+                        data: { datasets: [{ data: [RP.score, 100 - RP.score], backgroundColor: [RP.scoreCor, '#e2e8f0'], borderWidth: 0, borderRadius: 8 }] },
+                        options: {
+                            rotation: -90, circumference: 180, cutout: '78%',
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                        }
+                    });
+                }
+
+                var evoChart = null, evoView = 'fluxo', evoN = 12;
+                function pick(a) { return a.slice(a.length - evoN); }
+
+                function buildEvo() {
+                    var el = document.getElementById('rpEvo');
+                    if (!el) return;
+                    if (evoChart) evoChart.destroy();
+
+                    var labels = pick(ev.labels), n = labels.length, cfg;
+                    var scales = {
+                        x: { grid: { display: false }, border: NOBORDER },
+                        y: { grid: GRID, border: NOBORDER, ticks: { callback: tickBrl } }
+                    };
+                    var plugins = { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: { callbacks: { label: valorTooltip } } };
+
+                    if (evoView === 'fluxo') {
+                        cfg = {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [
+                                    { label: 'Receitas', data: pick(ev.receitas), backgroundColor: fade('#10b981', n), borderRadius: 6, maxBarThickness: 22, order: 2 },
+                                    { label: 'Despesas', data: pick(ev.despesas), backgroundColor: fade('#f43f5e', n), borderRadius: 6, maxBarThickness: 22, order: 2 },
+                                    { type: 'line', label: 'Resultado', data: pick(ev.saldo), borderColor: '#6366f1', backgroundColor: '#6366f1', tension: .35, borderWidth: 2.5, pointRadius: 3, order: 1 }
+                                ]
+                            },
+                            options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: plugins, scales: scales }
+                        };
+                    } else if (evoView === 'acumulado') {
+                        cfg = {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{ label: 'Saldo acumulado', data: pick(ev.acumulado), borderColor: '#6366f1', backgroundColor: grad('99,102,241'), fill: true, tension: .35, borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#fff', pointBorderColor: '#6366f1', pointBorderWidth: 2 }]
+                            },
+                            options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: plugins, scales: scales }
+                        };
+                    } else {
+                        var vals = pick(ev.poupanca);
+                        cfg = {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Taxa de poupança',
+                                    data: vals,
+                                    backgroundColor: vals.map(function (v, i) {
+                                        var c = (v != null && v < 0) ? '#f43f5e' : '#10b981';
+                                        return i === n - 1 ? c : c + '88';
+                                    }),
+                                    borderRadius: 8, maxBarThickness: 34
+                                }]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (c) { return ' Poupança: ' + (c.parsed.y == null ? '—' : c.parsed.y.toLocaleString('pt-BR') + '%'); } } } },
+                                scales: { x: scales.x, y: { grid: GRID, border: NOBORDER, ticks: { callback: function (v) { return v + '%'; } } } }
+                            }
+                        };
+                    }
+                    evoChart = new Chart(el, cfg);
+                }
+                buildEvo();
+
+                function seg(id, attr, cb) {
+                    var box = document.getElementById(id);
+                    if (!box) return;
+                    box.addEventListener('click', function (e) {
+                        var btn = e.target.closest('button');
+                        if (!btn) return;
+                        [].forEach.call(box.querySelectorAll('button'), function (b) { b.classList.toggle('active', b === btn); });
+                        cb(btn.getAttribute(attr));
+                    });
+                }
+                seg('rpEvoView', 'data-view', function (v) { evoView = v; buildEvo(); });
+                seg('rpEvoN', 'data-n', function (v) { evoN = parseInt(v, 10); buildEvo(); });
+
+                function donut(id, d) {
+                    var el = document.getElementById(id);
+                    if (!el || !d.values.length) return;
+                    new Chart(el, {
+                        type: 'doughnut',
+                        data: { labels: d.labels, datasets: [{ data: d.values, backgroundColor: d.colors, borderColor: '#fff', borderWidth: 3, hoverOffset: 6 }] },
+                        options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: valorTooltip } } } }
+                    });
+                }
+                donut('rpDonutDesp', RP.despesasCat);
+                donut('rpDonutRec', RP.receitasCat);
+
+                var acum = document.getElementById('rpAcum');
+                if (acum) {
+                    new Chart(acum, {
+                        type: 'line',
+                        data: {
+                            labels: RP.dias.labels,
+                            datasets: [
+                                { label: RP.dias.nomeAtual, data: RP.dias.atual, borderColor: '#6366f1', backgroundColor: grad('99,102,241'), fill: true, tension: .3, borderWidth: 3, pointRadius: 0, pointHoverRadius: 5, spanGaps: false },
+                                { label: RP.dias.nomeAnterior, data: RP.dias.anterior, borderColor: '#94a3b8', borderDash: [6, 5], fill: false, tension: .3, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, spanGaps: false }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: {
+                                legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } },
+                                tooltip: { callbacks: { title: function (items) { return 'Dia ' + items[0].label; }, label: valorTooltip } }
+                            },
+                            scales: {
+                                x: { grid: { display: false }, border: NOBORDER, ticks: { maxTicksLimit: 10 } },
+                                y: { grid: GRID, border: NOBORDER, beginAtZero: true, ticks: { callback: tickBrl } }
+                            }
+                        }
+                    });
+                }
+
+                var sem = document.getElementById('rpSemana');
+                if (sem) {
+                    var max = Math.max.apply(null, RP.semana.values);
+                    new Chart(sem, {
+                        type: 'bar',
+                        data: {
+                            labels: RP.semana.labels,
+                            datasets: [{
+                                label: 'Média de despesas',
+                                data: RP.semana.values,
+                                backgroundColor: RP.semana.values.map(function (v) { return (v === max && max > 0) ? '#06b6d4' : '#c7d2fe'; }),
+                                borderRadius: 8, maxBarThickness: 34
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { callbacks: { label: valorTooltip } } },
+                            scales: {
+                                x: { grid: { display: false }, border: NOBORDER },
+                                y: { grid: GRID, border: NOBORDER, beginAtZero: true, ticks: { callback: tickBrl } }
+                            }
+                        }
+                    });
+                }
+            })();
+        </script>
+    }
+}

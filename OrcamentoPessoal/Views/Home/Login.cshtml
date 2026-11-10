@@ -9,21 +9,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Acesso ao Sistema - Orçamento Pessoal & IA</title>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap Icons CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- Estilos da Aplicação -->
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
 </head>
 <body class="login-page-body">
     <div class="login-card-container">
-        <!-- Lado Visual: Identidade e Conceito do Projeto -->
         <div class="login-hero-side">
             <div class="login-hero-header">
                 <span class="login-brand-badge">
@@ -74,7 +70,6 @@
             </div>
         </div>
 
-        <!-- Lado Formulário: Acesso ao Sistema -->
         <div class="login-form-side">
             <div class="login-form-header">
                 <div class="d-flex align-items-center gap-2 mb-2">
@@ -144,7 +139,6 @@
         </div>
     </div>
 
-    <!-- Scripts -->
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
 
@@ -156,8 +150,6 @@
             var txtPass = document.getElementById('txtSenha');
             var btnToggle = document.getElementById('btnTogglePassword');
             var iconEye = document.getElementById('iconEye');
-
-            // Alternar visibilidade da senha
             if (btnToggle && txtPass && iconEye) {
                 btnToggle.addEventListener('click', function () {
                     if (txtPass.type === 'password') {
@@ -171,8 +163,6 @@
                     }
                 });
             }
-
-            // Máscara dinâmica de CPF
             if (txtUser) {
                 txtUser.addEventListener('input', function (e) {
                     var val = e.target.value.replace(/\D/g, '');
